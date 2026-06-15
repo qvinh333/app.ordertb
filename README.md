@@ -1,59 +1,84 @@
-# App
+# APP.Sale Frontend
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.0.0.
+Angular application for Taobao order sales management, built to match requirements in `required.md` and backend API contract in `API.README.md`.
 
-## Development server
+## Features
 
-To start a local development server, run:
+- JWT login/logout flow with route guard and role-based access (`ADMIN`, `SELLER`)
+- Global toast notifications for success/error/info events
+- Global API error interceptor with friendly messages and 401 session reset
+- Dashboard page:
+  - Order status statistics
+  - Revenue/profit statistics
+  - Orders grouped by date
+- Order management:
+  - List with filtering and pagination
+  - Create/update order
+  - Update order status
+  - Soft delete order
+- User management (Admin only):
+  - List/search/filter role
+  - Create/update/delete users
+- Pagination parser supports common backend response shapes (`items`, `records`, `totalCount`, `meta`, `pagination`, snake_case keys)
 
-```bash
-ng serve
+## Tech Stack
+
+- Angular 22 (standalone components)
+- Angular Router
+- Reactive Forms
+- HttpClient + auth interceptor
+
+## Project Structure
+
+```text
+src/app/
+  core/
+    auth.service.ts
+    auth.guard.ts
+    role.guard.ts
+    auth.interceptor.ts
+    dashboard.service.ts
+    orders.service.ts
+    users.service.ts
+    models.ts
+  features/
+    auth/login.page.ts
+    layout/app-layout.component.ts
+    dashboard/dashboard.page.ts
+    orders/orders.page.ts
+    orders/order-form.page.ts
+    users/users.page.ts
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+## API Configuration
 
-## Code scaffolding
+Default API base URL is set in `src/app/core/constants.ts`:
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
+```ts
+export const API_BASE_URL = 'https://localhost:5163';
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+If your backend runs at a different URL, update this value.
+
+## Quick Start
 
 ```bash
-ng generate --help
+npm install
+npm start
 ```
 
-## Building
+Open `http://localhost:4200`.
 
-To build the project run:
+## Test & Build
 
 ```bash
-ng build
+npm test
+npm run build
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+## Notes
 
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- All API payloads are parsed with support for standard wrapper format:
+  - `{ success, message, data }`
+- UI labels are Vietnamese and align with business flow in `required.md`.
+- This frontend expects backend endpoints from `API.README.md` to be available.
