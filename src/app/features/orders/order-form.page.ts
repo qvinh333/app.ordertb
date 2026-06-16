@@ -1,8 +1,10 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { finalize, timeout } from 'rxjs';
 import { ORDER_STATUSES, ORDER_STATUS_LABELS, PAYMENT_STATUSES, PAYMENT_STATUS_LABELS } from '../../core/constants';
+import { CurrencyRatesService } from '../../core/currency-rates.service';
 import { OrderStatus, OrderUpsertRequest, PaymentStatus } from '../../core/models';
 import { OrdersService } from '../../core/orders.service';
 import { ToastService } from '../../core/toast.service';
@@ -66,7 +68,7 @@ import { DatePickerComponent } from '../../shared/date-picker.component';
         </label>
 
         <label>
-          Giá tệ
+          Giá tệ (Tệ)
           <input type="number" formControlName="yuanPrice" />
         </label>
 
@@ -221,6 +223,8 @@ import { DatePickerComponent } from '../../shared/date-picker.component';
 })
 export class OrderFormPage implements OnInit {
   private readonly fb = inject(FormBuilder);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly currencyRatesService = inject(CurrencyRatesService);
   private readonly ordersService = inject(OrdersService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -235,6 +239,7 @@ export class OrderFormPage implements OnInit {
   readonly showSaveConfirm = signal(false);
   readonly errorMessage = signal('');
   readonly isEditMode = signal(false);
+  private currencyRate = 1;
   private orderId?: number;
 
   readonly form = this.fb.nonNullable.group({
@@ -259,6 +264,11 @@ export class OrderFormPage implements OnInit {
   });
 
   ngOnInit(): void {
+    this.loadLatestCurrencyRate();
+    this.form.controls.yuanPrice.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((value) => this.updateImportPriceFromYuan(value));
+
     const id = Number(this.route.snapshot.paramMap.get('id'));
     if (!Number.isNaN(id) && id > 0) {
       this.isEditMode.set(true);
@@ -287,7 +297,8 @@ export class OrderFormPage implements OnInit {
               refundAmount: order.refundAmount ?? 0,
               refundStatus: order.refundStatus ?? '',
               note: order.note ?? ''
-            });
+            }, { emitEvent: false });
+            this.form.markAsPristine();
           },
           error: () => {
             this.errorMessage.set('Không thể tải dữ liệu đơn hàng. Vui lòng thử lại.');
@@ -354,6 +365,28 @@ export class OrderFormPage implements OnInit {
 
   onBack(): void {
     this.router.navigate(['/orders']);
+  }
+
+  private loadLatestCurrencyRate(): void {
+    this.currencyRatesService
+      .latest()
+      .pipe(timeout(20000))
+      .subscribe({
+        next: (rate) => {
+          this.currencyRate = Number(rate?.rate) > 0 ? Number(rate?.rate) : 1;
+          if (this.form.controls.yuanPrice.dirty) {
+            this.updateImportPriceFromYuan(this.form.controls.yuanPrice.value);
+          }
+        },
+        error: () => {
+          this.currencyRate = 1;
+        }
+      });
+  }
+
+  private updateImportPriceFromYuan(value: number): void {
+    const yuanPrice = Number(value) || 0;
+    this.form.controls.importPrice.setValue(Math.round(yuanPrice * this.currencyRate), { emitEvent: false });
   }
 }
 

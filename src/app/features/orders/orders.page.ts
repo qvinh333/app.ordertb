@@ -9,6 +9,7 @@ import {
   PAYMENT_STATUS_LABELS,
   SUPPLIER_OPTIONS
 } from '../../core/constants';
+import { CurrencyRatesService } from '../../core/currency-rates.service';
 import {
   Customer,
   CustomerUpsertRequest,
@@ -281,7 +282,7 @@ import { SearchSelectComponent, SearchSelectOption } from '../../shared/search-s
                     Giá tệ
                     <div class="price-input-group">
                       <input type="text" inputmode="numeric" formControlName="yuanPrice" placeholder="0" (input)="onPriceInput($event, 'yuanPrice')" (blur)="savePriceValue($event, 'yuanPrice')" />
-                      <span class="price-unit">VNĐ</span>
+                      <span class="price-unit">Tệ</span>
                     </div>
                  </label>
                 <label>
@@ -424,7 +425,7 @@ import { SearchSelectComponent, SearchSelectOption } from '../../shared/search-s
               </div>
                <div class="view-item">
                  <div class="view-label">Giá tệ</div>
-                 <div class="view-value">{{ order.yuanPrice | number: '1.0-0' }} VNĐ</div>
+                 <div class="view-value">{{ order.yuanPrice | number: '1.0-0' }} Tệ</div>
                </div>
               <div class="view-item">
                 <div class="view-label">Giá nhập</div>
@@ -1378,6 +1379,7 @@ export class OrdersPage implements OnInit {
   private static readonly LOOKUP_PAGE_SIZE = 15;
 
   private readonly fb = inject(FormBuilder);
+  private readonly currencyRatesService = inject(CurrencyRatesService);
   private readonly customersService = inject(CustomersService);
   private readonly ordersService = inject(OrdersService);
   private readonly productsService = inject(ProductsService);
@@ -1419,6 +1421,7 @@ export class OrdersPage implements OnInit {
    private pendingStatusOrderId: number | null = null;
    private pendingStatusOrderCode: string | null = null;
    private pendingStatusValue: OrderStatus | null = null;
+   private currencyRate = 1;
    private customerLookupPage = 0;
    private customerLookupSearch = '';
    private productLookupPage = 0;
@@ -1462,6 +1465,7 @@ export class OrdersPage implements OnInit {
   });
 
   ngOnInit(): void {
+    this.loadLatestCurrencyRate();
     this.fetch(1);
   }
 
@@ -1558,6 +1562,7 @@ export class OrdersPage implements OnInit {
     this.editingOrderId.set(null);
     this.originalEditStatus.set(null);
     this.formError.set('');
+    this.loadLatestCurrencyRate();
     this.orderForm.reset({
       orderCode: generateOrderCode(),
       orderDate: today(),
@@ -1578,6 +1583,7 @@ export class OrdersPage implements OnInit {
       refundStatus: '',
       note: ''
     });
+    this.orderForm.markAsPristine();
     this.showFormModal.set(true);
     this.formModalClosing.set(false);
     this.searchCustomers('');
@@ -1622,6 +1628,8 @@ export class OrdersPage implements OnInit {
             refundStatus: order.refundStatus ?? '',
             note: order.note ?? ''
           });
+          this.orderForm.markAsPristine();
+          this.loadLatestCurrencyRate();
           this.showFormModal.set(true);
           this.formModalClosing.set(false);
           this.focusOrderModal();
@@ -1854,6 +1862,10 @@ export class OrdersPage implements OnInit {
 
     this.orderForm.get(fieldName)?.setValue(numValue);
     input.value = this.formatNumberDisplay(rawValue);
+
+    if (fieldName === 'yuanPrice') {
+      this.updateImportPriceFromYuan(numValue);
+    }
   }
 
   private formatNumberDisplay(value: string): string {
@@ -1872,6 +1884,33 @@ export class OrdersPage implements OnInit {
         }
       }
     });
+  }
+
+  private loadLatestCurrencyRate(): void {
+    this.currencyRatesService
+      .latest()
+      .pipe(timeout(20000))
+      .subscribe({
+        next: (rate) => {
+          this.currencyRate = Number(rate?.rate) > 0 ? Number(rate?.rate) : 1;
+          if (this.orderForm.controls.yuanPrice.dirty) {
+            this.updateImportPriceFromYuan(Number(this.orderForm.controls.yuanPrice.value) || 0);
+          }
+        },
+        error: () => {
+          this.currencyRate = 1;
+        }
+      });
+  }
+
+  private updateImportPriceFromYuan(yuanPrice: number): void {
+    const importPrice = Math.round(yuanPrice * this.currencyRate);
+    this.orderForm.controls.importPrice.setValue(importPrice);
+
+    const input = document.querySelector('input[formControlName="importPrice"]') as HTMLInputElement | null;
+    if (input) {
+      input.value = this.formatNumberDisplay(String(importPrice));
+    }
   }
 
   searchCustomers(term: string): void {

@@ -145,6 +145,19 @@ export interface CustomerUpsertRequest {
   note?: string;
 }
 
+export interface CurrencyRate {
+  id: number;
+  rate: number;
+  note?: string;
+  createdBy?: number;
+  createdAt?: string;
+}
+
+export interface CurrencyRateCreateRequest {
+  rate: number;
+  note?: string;
+}
+
 export interface DashboardOrderStatus {
   draft: number;
   new: number;
