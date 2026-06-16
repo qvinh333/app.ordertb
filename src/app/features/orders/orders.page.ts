@@ -1231,6 +1231,12 @@ import { SearchSelectComponent, SearchSelectOption } from '../../shared/search-s
           padding: 0.52rem 0.72rem;
           white-space: normal;
           border-bottom: 1px solid #f2f5fa;
+          min-width: 0;
+          overflow: hidden;
+        }
+
+        tbody tr td > * {
+          min-width: 0;
         }
 
         tbody tr td::before {
@@ -1238,7 +1244,7 @@ import { SearchSelectComponent, SearchSelectOption } from '../../shared/search-s
           font-weight: 600;
           color: #5f708f;
           font-size: 0.78rem;
-          min-width: 6rem;
+          min-width: 4rem;
         }
 
         tbody tr td:last-child {
@@ -1247,7 +1253,7 @@ import { SearchSelectComponent, SearchSelectOption } from '../../shared/search-s
 
         td app-search-select {
           min-width: 0;
-          width: 100%;
+          width: auto;
         }
 
         .actions-cell {

@@ -551,11 +551,15 @@ import { ConfirmModalComponent } from '../../shared/confirm-modal.component';
       .table-wrap {
         border: none;
         background: transparent;
+        overflow: visible;
+        max-width: 100%;
       }
 
       table {
         min-width: 0;
+        width: 100%;
         border-collapse: separate;
+        table-layout: fixed;
       }
 
       thead {
@@ -569,6 +573,8 @@ import { ConfirmModalComponent } from '../../shared/confirm-modal.component';
 
       tbody tr {
         display: block;
+        width: 100%;
+        min-width: 0;
         border: 1px solid #e6edf7;
         border-radius: 12px;
         background: #fff;
@@ -583,15 +589,24 @@ import { ConfirmModalComponent } from '../../shared/confirm-modal.component';
         gap: 0.75rem;
         padding: 0.5rem 0.7rem;
         white-space: normal;
+        min-width: 0;
+        overflow-wrap: anywhere;
+        word-break: break-word;
         border-bottom: 1px solid #f2f5fa;
       }
 
       tbody tr td::before {
         content: attr(data-label);
+        flex: 0 0 6.8rem;
         font-weight: 600;
         color: #5f708f;
         font-size: 0.78rem;
-        min-width: 6.8rem;
+        min-width: 0;
+      }
+
+      tbody tr td > * {
+        min-width: 0;
+        max-width: 100%;
       }
 
       tbody tr td:last-child {
