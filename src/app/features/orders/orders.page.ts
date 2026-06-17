@@ -70,8 +70,52 @@ import { SearchSelectComponent, SearchSelectOption } from '../../shared/search-s
       }
 
       <form class="filters" [formGroup]="form" (ngSubmit)="onSearch()">
-        <input formControlName="customerName" placeholder="Tìm theo tên khách" />
-        <input formControlName="productName" placeholder="Tìm theo tên sản phẩm" />
+        <input
+          formControlName="customerName"
+          placeholder="Tìm theo tên khách"
+          style="display: none"
+        />
+        <input
+          formControlName="productName"
+          placeholder="Tìm theo tên sản phẩm"
+          style="display: none"
+        />
+        <app-search-select
+          [selectedLabel]="form.controls.customerName.value"
+          [options]="customerLookupOptions()"
+          [loading]="customerLookupLoading"
+          [loadingMore]="customerLookupLoadingMore"
+          [hasMore]="customerLookupHasMore"
+          [allowCustomValue]="true"
+          [allowClear]="true"
+          customActionText="Dùng tên khách hàng này"
+          placeholder="Chọn hoặc tìm khách hàng"
+          searchPlaceholder="Tìm theo mã, tên hoặc số điện thoại"
+          emptyText="Không tìm thấy khách hàng (vẫn có thể lưu để tự tạo mới)"
+          (searchChange)="searchCustomers($event)"
+          (loadMore)="loadMoreCustomers()"
+          (optionSelected)="selectCustomerSearch($event)"
+          (customValueSelected)="onCustomerTypedSearch($event)"
+          (cleared)="clearCustomerSearch()"
+        />
+        <app-search-select
+          [selectedLabel]="form.controls.productName.value"
+          [options]="productLookupOptions()"
+          [loading]="productLookupLoading"
+          [loadingMore]="productLookupLoadingMore"
+          [hasMore]="productLookupHasMore"
+          [allowCustomValue]="true"
+          [allowClear]="true"
+          customActionText="Dùng tên sản phẩm này"
+          placeholder="Chọn hoặc tìm sản phẩm"
+          searchPlaceholder="Tìm theo mã hoặc tên sản phẩm"
+          emptyText="Không tìm thấy sản phẩm (vẫn có thể lưu để tự tạo mới)"
+          (searchChange)="searchProducts($event)"
+          (loadMore)="loadMoreProducts()"
+          (optionSelected)="selectProductSearch($event)"
+          (customValueSelected)="onProductTypedSearch($event)"
+          (cleared)="clearProductSearch()"
+        />
         <app-search-select
           [selectedLabel]="selectedFilterStatusLabel()"
           [options]="filterStatusSelectOptions()"
@@ -2054,6 +2098,73 @@ export class OrdersPage implements OnInit {
     this.tryApplyMatchedProduct(productName);
   }
 
+  private tryApplyMatchedProductSearch(productName: string): void {
+    const normalizedName = normalizeText(productName);
+    if (!normalizedName) {
+      return;
+    }
+
+    const matched = this.productLookupOptions().find(
+      (option) => normalizeText(option.label) === normalizedName,
+    );
+    if (!matched) {
+      return;
+    }
+
+    const product = matched.raw as Product | undefined;
+    if (!product) {
+      return;
+    }
+
+    this.form.patchValue({
+      productName: product?.name?.trim() || productName,
+    });
+  }
+
+  onProductTypedSearch(value: string): void {
+    const productName = value.trim();
+    if (!productName) {
+      return;
+    }
+
+    this.form.patchValue({ productName });
+    this.tryApplyMatchedProductSearch(productName);
+  }
+
+  selectCustomerSearch(option: SearchSelectOption): void {
+    const customer = option.raw as Customer | undefined;
+    const customerName = customer?.fullName?.trim() || option.label;
+    this.form.patchValue({ customerName });
+  }
+
+  onCustomerTypedSearch(value: string): void {
+    const customerName = value.trim();
+    if (!customerName) {
+      return;
+    }
+
+    this.form.patchValue({ customerName });
+  }
+
+  selectProductSearch(option: SearchSelectOption): void {
+    const product = option.raw as Product | undefined;
+    this.form.patchValue({
+      productName: product?.name?.trim() || option.label,
+    });
+  }
+
+  clearProductSearch(): void {
+    this.form.patchValue({
+      productName: '',
+    });
+  }
+
+  clearCustomerSearch(): void {
+    this.form.patchValue({
+      customerName: '',
+    });
+  }
+
   onPriceInput(event: Event, fieldName: string): void {
     const input = event.target as HTMLInputElement;
     if (!input) return;
@@ -2173,16 +2284,12 @@ export class OrdersPage implements OnInit {
     const sellingPrice = Number(this.orderForm.get('sellingPrice')?.value || 0);
 
     // Làm tròn 2 chữ số thập phân
-    const amountSellingPrice =
-      Math.round(sellingPrice * quantity * 100) / 100;
+    const amountSellingPrice = Math.round(sellingPrice * quantity * 100) / 100;
 
-    this.orderForm.controls.amountSellingPrice.setValue(
-      amountSellingPrice,
-      { emitEvent: false }
-    );
+    this.orderForm.controls.amountSellingPrice.setValue(amountSellingPrice, { emitEvent: false });
 
     const input = document.querySelector(
-      'input[formControlName="amountSellingPrice"]'
+      'input[formControlName="amountSellingPrice"]',
     ) as HTMLInputElement | null;
 
     if (input) {
@@ -2241,9 +2348,14 @@ export class OrdersPage implements OnInit {
     this.orderForm.patchValue({
       productName: product?.name?.trim() || option.label,
       specification: currentSpecification || product?.specification || '',
-      sellingPrice:
-        currentSellingPrice > 0 ? currentSellingPrice : Number(product?.defaultSellingPrice ?? 0),
+      sellingPrice: Number(product?.defaultSellingPrice ?? 0),
     });
+
+    const input = document.querySelector('input[formControlName="sellingPrice"]',) as HTMLInputElement | null;
+    if (input) {
+      input.value = this.formatNumberDisplay(String(product?.defaultSellingPrice ?? 0));
+      this.updateAmountSellingPriceFromSellingPrice();
+    }
   }
 
   supplierOptionsForForm(): string[] {

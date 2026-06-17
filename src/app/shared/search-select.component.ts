@@ -31,10 +31,28 @@ export interface SearchSelectOption {
         [attr.aria-expanded]="open()"
         (blur)="handleBlur()"
       >
-        <span class="value" [class.placeholder]="!selectedLabel">{{ selectedLabel || placeholder }}</span>
-        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-          <path d="m6 9 6 6 6-6" />
-        </svg>
+        <span class="value" [class.placeholder]="!selectedLabel">
+          {{ selectedLabel || placeholder }}
+        </span>
+
+        <span class="actions">
+          @if (allowClear && selectedLabel && !disabled) {
+            <span
+              class="clear-btn"
+              role="button"
+              tabindex="0"
+              (click)="clearSelection($event)"
+              (keydown.enter)="clearSelection($event)"
+              aria-label="Xóa"
+            >
+              ✕
+            </span>
+          }
+
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="m6 9 6 6 6-6" />
+          </svg>
+        </span>
       </button>
 
       @if (open()) {
@@ -96,25 +114,28 @@ export interface SearchSelectOption {
       opacity: 0.72;
     }
 
-     .trigger {
-       width: 100%;
-       min-height: auto;
-       border: 1px solid #d4dff0;
-       border-radius: 10px;
-       background: linear-gradient(180deg, #ffffff, #f4f8ff);
-       padding: 0.48rem 0.62rem;
-       display: flex;
-       align-items: center;
-       justify-content: space-between;
-       gap: 0.5rem;
-       color: var(--text);
-       cursor: pointer;
-       font: inherit;
-       text-align: left;
-       height: auto;
-       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
-       transition: border-color 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease;
-     }
+    .trigger {
+      width: 100%;
+      min-height: auto;
+      border: 1px solid #d4dff0;
+      border-radius: 10px;
+      background: linear-gradient(180deg, #ffffff, #f4f8ff);
+      padding: 0.48rem 0.62rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      color: var(--text);
+      cursor: pointer;
+      font: inherit;
+      text-align: left;
+      height: auto;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+      transition:
+        border-color 0.16s ease,
+        box-shadow 0.16s ease,
+        background-color 0.16s ease;
+    }
 
     .trigger:hover {
       border-color: #b7c9e5;
@@ -179,7 +200,9 @@ export interface SearchSelectOption {
       border-radius: 10px;
       padding: 0.42rem 0.58rem;
       background: #fff;
-      transition: border-color 0.16s ease, box-shadow 0.16s ease;
+      transition:
+        border-color 0.16s ease,
+        box-shadow 0.16s ease;
     }
 
     .panel-search input:focus-visible {
@@ -224,7 +247,10 @@ export interface SearchSelectOption {
       cursor: pointer;
       position: relative;
       overflow: hidden;
-      transition: border-color 0.16s ease, background-color 0.16s ease, transform 0.16s ease;
+      transition:
+        border-color 0.16s ease,
+        background-color 0.16s ease,
+        transform 0.16s ease;
     }
 
     .option::before {
@@ -238,7 +264,9 @@ export interface SearchSelectOption {
       background: linear-gradient(180deg, #6ea8ff, #4f8eff);
       opacity: 0;
       transform: scaleY(0.35);
-      transition: opacity 0.16s ease, transform 0.16s ease;
+      transition:
+        opacity 0.16s ease,
+        transform 0.16s ease;
     }
 
     .option:hover {
@@ -261,7 +289,9 @@ export interface SearchSelectOption {
     .option:focus-visible {
       outline: none;
       border-color: #79adfb;
-      box-shadow: 0 0 0 2px rgba(64, 153, 255, 0.16), 0 6px 16px rgba(82, 132, 201, 0.12);
+      box-shadow:
+        0 0 0 2px rgba(64, 153, 255, 0.16),
+        0 6px 16px rgba(82, 132, 201, 0.12);
     }
 
     .option-label {
@@ -325,7 +355,7 @@ export interface SearchSelectOption {
       border-color: #b8d8ff;
       background: #e9f3ff;
     }
-  `
+  `,
 })
 export class SearchSelectComponent implements OnDestroy {
   @Input() placeholder = 'Chọn dữ liệu';
@@ -339,6 +369,8 @@ export class SearchSelectComponent implements OnDestroy {
   @Input() loading = signal(false);
   @Input() loadingMore = signal(false);
   @Input() hasMore = signal(false);
+  @Input() allowClear = false;
+  @Output() cleared = new EventEmitter<void>();
 
   @Output() opened = new EventEmitter<void>();
   @Output() searchChange = new EventEmitter<string>();
@@ -402,7 +434,9 @@ export class SearchSelectComponent implements OnDestroy {
     this.searchChange.emit('');
     setTimeout(() => {
       this.updatePanelPosition();
-      const searchInput = this.elementRef.nativeElement.querySelector('.panel-search input') as HTMLInputElement | null;
+      const searchInput = this.elementRef.nativeElement.querySelector(
+        '.panel-search input',
+      ) as HTMLInputElement | null;
       searchInput?.focus();
     }, 0);
   }
@@ -490,7 +524,8 @@ export class SearchSelectComponent implements OnDestroy {
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
     const left = Math.max(8, Math.min(rect.left, viewportWidth - panelWidth - 8));
-    const placeAbove = rect.bottom + panelHeight + 8 > viewportHeight && rect.top - panelHeight - 8 > 8;
+    const placeAbove =
+      rect.bottom + panelHeight + 8 > viewportHeight && rect.top - panelHeight - 8 > 8;
     const top = placeAbove
       ? Math.max(8, rect.top - panelHeight - 6)
       : Math.min(viewportHeight - panelHeight - 8, rect.bottom + 6);
@@ -498,8 +533,16 @@ export class SearchSelectComponent implements OnDestroy {
     this.panelStyle.set({
       top: `${top}px`,
       left: `${left}px`,
-      width: `${panelWidth}px`
+      width: `${panelWidth}px`,
     });
+  }
+
+  clearSelection(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    this.searchTerm.set('');
+    this.cleared.emit();
   }
 }
 
