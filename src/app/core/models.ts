@@ -61,6 +61,7 @@ export interface Order {
   specification?: string;
   quantity: number;
   sellingPrice: number;
+  amountSellingPrice: number;
   status: OrderStatus;
   paymentStatus: PaymentStatus;
   yuanPrice?: number;

@@ -31,14 +31,32 @@ import { SearchSelectComponent, SearchSelectOption } from '../../shared/search-s
 
 @Component({
   selector: 'app-orders-page',
-  imports: [CommonModule, ReactiveFormsModule, DatePipe, DecimalPipe, ConfirmModalComponent, DatePickerComponent, SearchSelectComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    DatePipe,
+    DecimalPipe,
+    ConfirmModalComponent,
+    DatePickerComponent,
+    SearchSelectComponent,
+  ],
   template: `
     <section class="card">
       <div class="header">
         <h2>Đơn hàng</h2>
         <button type="button" class="btn-primary" (click)="openCreateModal()">
           <span class="btn-content">
-            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+            <svg
+              class="btn-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <path d="M12 5v14" />
+              <path d="M5 12h14" />
+            </svg>
             <span>Tạo đơn</span>
           </span>
         </button>
@@ -66,7 +84,17 @@ import { SearchSelectComponent, SearchSelectOption } from '../../shared/search-s
         <app-date-picker formControlName="toDate" placeholder="Đến ngày" />
         <button type="submit">
           <span class="btn-content">
-            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>
+            <svg
+              class="btn-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <circle cx="11" cy="11" r="7" />
+              <path d="m21 21-4.35-4.35" />
+            </svg>
             <span>Tìm kiếm</span>
           </span>
         </button>
@@ -81,8 +109,8 @@ import { SearchSelectComponent, SearchSelectOption } from '../../shared/search-s
               <th>Khách hàng</th>
               <th>Sản phẩm</th>
               <th>Ngày tạo</th>
-              <th>Số lượng</th>
-              <th>Giá bán</th>
+              <th>Mô tả</th>
+              <th>Tổng giá bán</th>
               <th>Trạng thái</th>
               <th>Thanh toán</th>
               <th>Thao tác</th>
@@ -91,13 +119,17 @@ import { SearchSelectComponent, SearchSelectOption } from '../../shared/search-s
           <tbody>
             @for (order of pageData().items; track order.id; let rowIndex = $index) {
               <tr>
-                <td data-label="STT">{{ (pageData().page - 1) * pageData().pageSize + rowIndex + 1 }}</td>
+                <td data-label="STT">
+                  {{ (pageData().page - 1) * pageData().pageSize + rowIndex + 1 }}
+                </td>
                 <td data-label="Mã đơn">{{ order.orderCode }}</td>
                 <td data-label="Khách hàng">{{ order.customerName }}</td>
                 <td data-label="Sản phẩm">{{ order.productName }}</td>
                 <td data-label="Ngày tạo">{{ order.orderDate | date: 'yyyy-MM-dd' }}</td>
-                <td data-label="Số lượng">{{ order.quantity }}</td>
-                <td data-label="Giá bán">{{ order.sellingPrice | number: '1.0-0' }} VNĐ</td>
+                <td data-label="Mô tả">{{ order.specification }}</td>
+                <td data-label="Tổng giá bán">
+                  {{ order.amountSellingPrice | number: '1.0-0' }} VNĐ
+                </td>
                 <td data-label="Trạng thái">
                   <app-search-select
                     [selectedLabel]="orderStatusLabels[order.status]"
@@ -117,19 +149,52 @@ import { SearchSelectComponent, SearchSelectOption } from '../../shared/search-s
                 <td data-label="Thao tác" class="actions actions-cell">
                   <button type="button" class="btn-view" (click)="openViewModal(order.id)">
                     <span class="btn-content">
-                      <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                      <svg
+                        class="btn-icon"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        aria-hidden="true"
+                      >
+                        <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
+                        <circle cx="12" cy="12" r="3" />
+                      </svg>
                       <span>Xem</span>
                     </span>
                   </button>
                   <button type="button" class="btn-ghost" (click)="openEditModal(order.id)">
                     <span class="btn-content">
-                      <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 1 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                      <svg
+                        class="btn-icon"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        aria-hidden="true"
+                      >
+                        <path d="M12 20h9" />
+                        <path d="M16.5 3.5a2.1 2.1 0 1 1 3 3L7 19l-4 1 1-4Z" />
+                      </svg>
                       <span>Sửa</span>
                     </span>
                   </button>
                   <button type="button" class="btn-danger" (click)="onDelete(order.id)">
                     <span class="btn-content">
-                      <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+                      <svg
+                        class="btn-icon"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        aria-hidden="true"
+                      >
+                        <path d="M3 6h18" />
+                        <path d="M8 6V4h8v2" />
+                        <path d="M19 6l-1 14H6L5 6" />
+                        <path d="M10 11v6" />
+                        <path d="M14 11v6" />
+                      </svg>
                       <span>Xóa</span>
                     </span>
                   </button>
@@ -162,33 +227,70 @@ import { SearchSelectComponent, SearchSelectOption } from '../../shared/search-s
           </label>
         </div>
         <div class="pager-controls">
-          <button type="button" class="pager-btn" (click)="goToPage(pageData().page - 1)" [disabled]="pageData().page <= 1">Trước</button>
-          <span class="pager-current">Trang {{ pageData().page }} / {{ pageData().totalPages }}</span>
-          <button type="button" class="pager-btn" (click)="goToPage(pageData().page + 1)" [disabled]="pageData().page >= pageData().totalPages">Sau</button>
+          <button
+            type="button"
+            class="pager-btn"
+            (click)="goToPage(pageData().page - 1)"
+            [disabled]="pageData().page <= 1"
+          >
+            Trước
+          </button>
+          <span class="pager-current"
+            >Trang {{ pageData().page }} / {{ pageData().totalPages }}</span
+          >
+          <button
+            type="button"
+            class="pager-btn"
+            (click)="goToPage(pageData().page + 1)"
+            [disabled]="pageData().page >= pageData().totalPages"
+          >
+            Sau
+          </button>
         </div>
       </div>
     </section>
 
-     @if (showFormModal()) {
-       <div class="modal-overlay" [class.closing]="formModalClosing()" (click)="closeFormModal()">
-         <section
-           #orderModalRoot
-           class="form-modal"
-           [class.closing]="formModalClosing()"
-           tabindex="-1"
-           (click)="$event.stopPropagation()"
-           (keydown.escape)="onFormEsc($event)"
-           (keydown)="onFormKeydown($event)"
-         >
-           <h3>
-             <span class="title-with-icon">
-               <svg class="title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 7h18"/><path d="M6 3h12l1 4H5z"/><rect x="3" y="7" width="18" height="14" rx="2"/><path d="M9 12h6"/></svg>
-               <span>{{ editingOrderId() ? 'Cập nhật đơn hàng' : 'Tạo đơn hàng mới' }}</span>
-             </span>
-             <button type="button" class="close-btn" (click)="closeFormModal()" aria-label="Close">
-               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-             </button>
-           </h3>
+    @if (showFormModal()) {
+      <div class="modal-overlay" [class.closing]="formModalClosing()" (click)="closeFormModal()">
+        <section
+          #orderModalRoot
+          class="form-modal"
+          [class.closing]="formModalClosing()"
+          tabindex="-1"
+          (click)="$event.stopPropagation()"
+          (keydown.escape)="onFormEsc($event)"
+          (keydown)="onFormKeydown($event)"
+        >
+          <h3>
+            <span class="title-with-icon">
+              <svg
+                class="title-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                aria-hidden="true"
+              >
+                <path d="M3 7h18" />
+                <path d="M6 3h12l1 4H5z" />
+                <rect x="3" y="7" width="18" height="14" rx="2" />
+                <path d="M9 12h6" />
+              </svg>
+              <span>{{ editingOrderId() ? 'Cập nhật đơn hàng' : 'Tạo đơn hàng mới' }}</span>
+            </span>
+            <button type="button" class="close-btn" (click)="closeFormModal()" aria-label="Close">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                aria-hidden="true"
+              >
+                <path d="M18 6 6 18" />
+                <path d="m6 6 12 12" />
+              </svg>
+            </button>
+          </h3>
 
           <form [formGroup]="orderForm" (ngSubmit)="requestSave()" class="form-sections">
             <section class="form-section general">
@@ -248,7 +350,11 @@ import { SearchSelectComponent, SearchSelectOption } from '../../shared/search-s
                 </label>
                 <label>
                   Số lượng *
-                  <input type="number" formControlName="quantity" />
+                  <input
+                    (blur)="updateAmountSellingPriceFromSellingPrice()"
+                    type="number"
+                    formControlName="quantity"
+                  />
                 </label>
                 <label>
                   Nguồn hàng
@@ -274,42 +380,56 @@ import { SearchSelectComponent, SearchSelectOption } from '../../shared/search-s
                 <label>
                   Giá bán *
                   <div class="price-input-group">
-                    <input type="text" inputmode="numeric" formControlName="sellingPrice" placeholder="0" (input)="onPriceInput($event, 'sellingPrice')" (blur)="savePriceValue($event, 'sellingPrice')" />
+                    <input
+                      type="text"
+                      inputmode="numeric"
+                      formControlName="sellingPrice"
+                      placeholder="0"
+                      (input)="onPriceInput($event, 'sellingPrice')"
+                      (blur)="savePriceValue($event, 'sellingPrice')"
+                    />
                     <span class="price-unit">VNĐ</span>
                   </div>
                 </label>
-                 <label>
-                    Giá tệ
-                    <div class="price-input-group">
-                      <input type="text" inputmode="numeric" formControlName="yuanPrice" placeholder="0" (input)="onPriceInput($event, 'yuanPrice')" (blur)="savePriceValue($event, 'yuanPrice')" />
-                      <span class="price-unit">Tệ</span>
-                    </div>
-                 </label>
+                <label>
+                  Giá tệ
+                  <div class="price-input-group">
+                    <input
+                      type="text"
+                      inputmode="numeric"
+                      formControlName="yuanPrice"
+                      placeholder="0"
+                      (input)="onPriceInputFloat($event, 'yuanPrice')"
+                      (blur)="savePriceValue($event, 'yuanPrice')"
+                    />
+                    <span class="price-unit">Tệ</span>
+                  </div>
+                </label>
                 <label>
                   Giá nhập
                   <div class="price-input-group">
-                    <input type="text" inputmode="numeric" formControlName="importPrice" placeholder="0" (input)="onPriceInput($event, 'importPrice')" (blur)="savePriceValue($event, 'importPrice')" />
+                    <input
+                      type="text"
+                      inputmode="numeric"
+                      formControlName="importPrice"
+                      placeholder="0"
+                      (input)="onPriceInput($event, 'importPrice')"
+                      (blur)="savePriceValue($event, 'importPrice')"
+                    />
                     <span class="price-unit">VNĐ</span>
                   </div>
                 </label>
-                <label>
-                  Tiền kho
+                <label class="full">
+                  Tổng tiền
                   <div class="price-input-group">
-                    <input type="text" inputmode="numeric" formControlName="warehousePayment" placeholder="0" (input)="onPriceInput($event, 'warehousePayment')" (blur)="savePriceValue($event, 'warehousePayment')" />
-                    <span class="price-unit">VNĐ</span>
-                  </div>
-                </label>
-                <label>
-                  Tiền cân
-                  <div class="price-input-group">
-                    <input type="text" inputmode="numeric" formControlName="shippingWeightFee" placeholder="0" (input)="onPriceInput($event, 'shippingWeightFee')" (blur)="savePriceValue($event, 'shippingWeightFee')" />
-                    <span class="price-unit">VNĐ</span>
-                  </div>
-                </label>
-                <label>
-                  Tiền hoàn
-                  <div class="price-input-group">
-                    <input type="text" inputmode="numeric" formControlName="refundAmount" placeholder="0" (input)="onPriceInput($event, 'refundAmount')" (blur)="savePriceValue($event, 'refundAmount')" />
+                    <input
+                      type="text"
+                      inputmode="numeric"
+                      formControlName="amountSellingPrice"
+                      placeholder="0"
+                      (input)="onPriceInput($event, 'amountSellingPrice')"
+                      (blur)="savePriceValue($event, 'amountSellingPrice')"
+                    />
                     <span class="price-unit">VNĐ</span>
                   </div>
                 </label>
@@ -347,7 +467,10 @@ import { SearchSelectComponent, SearchSelectOption } from '../../shared/search-s
                 </label>
                 <label>
                   Ngày thanh toán cân
-                  <app-date-picker formControlName="shippingPaymentDate" placeholder="Ngày thanh toán cân" />
+                  <app-date-picker
+                    formControlName="shippingPaymentDate"
+                    placeholder="Ngày thanh toán cân"
+                  />
                 </label>
               </div>
             </section>
@@ -368,13 +491,39 @@ import { SearchSelectComponent, SearchSelectOption } from '../../shared/search-s
             <div class="form-actions full-row">
               <button type="button" (click)="closeFormModal()">
                 <span class="btn-content">
-                  <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                  <svg
+                    class="btn-icon"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    aria-hidden="true"
+                  >
+                    <path d="M18 6 6 18" />
+                    <path d="m6 6 12 12" />
+                  </svg>
                   <span>Hủy</span>
                 </span>
               </button>
-              <button type="button" class="btn-primary" [disabled]="saving()" (click)="requestSave()">
+              <button
+                type="button"
+                class="btn-primary"
+                [disabled]="saving()"
+                (click)="requestSave()"
+              >
                 <span class="btn-content">
-                  <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/></svg>
+                  <svg
+                    class="btn-icon"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    aria-hidden="true"
+                  >
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z" />
+                    <path d="M17 21v-8H7v8" />
+                    <path d="M7 3v5h8" />
+                  </svg>
                   <span>{{ saving() ? 'Đang lưu...' : 'Lưu' }}</span>
                 </span>
               </button>
@@ -384,18 +533,43 @@ import { SearchSelectComponent, SearchSelectOption } from '../../shared/search-s
       </div>
     }
 
-     @if (showViewModal()) {
-       <div class="modal-overlay" [class.closing]="viewModalClosing()" (click)="closeViewModal()">
-         <section class="view-modal" [class.closing]="viewModalClosing()" tabindex="-1" (click)="$event.stopPropagation()" (keydown.escape)="closeViewModal()">
-           <h3>
-             <span class="title-with-icon">
-               <svg class="title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-               <span>Chi tiết đơn hàng</span>
-             </span>
-             <button type="button" class="close-btn" (click)="closeViewModal()" aria-label="Close">
-               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-             </button>
-           </h3>
+    @if (showViewModal()) {
+      <div class="modal-overlay" [class.closing]="viewModalClosing()" (click)="closeViewModal()">
+        <section
+          class="view-modal"
+          [class.closing]="viewModalClosing()"
+          tabindex="-1"
+          (click)="$event.stopPropagation()"
+          (keydown.escape)="closeViewModal()"
+        >
+          <h3>
+            <span class="title-with-icon">
+              <svg
+                class="title-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                aria-hidden="true"
+              >
+                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+              <span>Chi tiết đơn hàng</span>
+            </span>
+            <button type="button" class="close-btn" (click)="closeViewModal()" aria-label="Close">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                aria-hidden="true"
+              >
+                <path d="M18 6 6 18" />
+                <path d="m6 6 12 12" />
+              </svg>
+            </button>
+          </h3>
 
           @if (viewingOrder(); as order) {
             <div class="view-grid">
@@ -423,10 +597,14 @@ import { SearchSelectComponent, SearchSelectOption } from '../../shared/search-s
                 <div class="view-label">Giá bán</div>
                 <div class="view-value">{{ order.sellingPrice | number: '1.0-0' }} VNĐ</div>
               </div>
-               <div class="view-item">
-                 <div class="view-label">Giá tệ</div>
-                 <div class="view-value">{{ order.yuanPrice | number: '1.0-0' }} Tệ</div>
-               </div>
+              <div class="view-item">
+                <div class="view-label">Tổng Giá bán</div>
+                <div class="view-value">{{ order.amountSellingPrice | number: '1.0-0' }} VNĐ</div>
+              </div>
+              <div class="view-item">
+                <div class="view-label">Giá tệ</div>
+                <div class="view-value">{{ order.yuanPrice | number: '1.0-0' }} Tệ</div>
+              </div>
               <div class="view-item">
                 <div class="view-label">Giá nhập</div>
                 <div class="view-value">{{ order.importPrice | number: '1.0-0' }} VNĐ</div>
@@ -447,28 +625,8 @@ import { SearchSelectComponent, SearchSelectOption } from '../../shared/search-s
                 <div class="view-label">Nguồn hàng</div>
                 <div class="view-value">{{ order.supplier || '-' }}</div>
               </div>
-              <div class="view-item">
-                <div class="view-label">Thanh toán kho</div>
-                <div class="view-value">{{ order.warehousePayment | number: '1.0-0' }} VNĐ</div>
-              </div>
-              <div class="view-item">
-                <div class="view-label">Phí vận chuyển</div>
-                <div class="view-value">{{ order.shippingWeightFee | number: '1.0-0' }} VNĐ</div>
-              </div>
-              <div class="view-item">
-                <div class="view-label">Ngày trả tiền cân</div>
-                <div class="view-value">{{ order.shippingPaymentDate | date: 'yyyy-MM-dd' }}</div>
-              </div>
-              <div class="view-item">
-                <div class="view-label">Số tiền hoàn lại</div>
-                <div class="view-value">{{ order.refundAmount | number: '1.0-0' }} VNĐ</div>
-              </div>
-              <div class="view-item">
-                <div class="view-label">Trạng thái hoàn</div>
-                <div class="view-value">{{ order.refundStatus || '-' }}</div>
-              </div>
               <div class="view-item full">
-                <div class="view-label">Thông số kỹ thuật</div>
+                <div class="view-label">Mô tả</div>
                 <div class="view-value">{{ order.specification || '-' }}</div>
               </div>
               <div class="view-item full">
@@ -476,7 +634,11 @@ import { SearchSelectComponent, SearchSelectOption } from '../../shared/search-s
                 <div class="view-value">{{ order.note || '-' }}</div>
               </div>
               <div class="view-item full compact-meta">
-                <div class="view-value">Tạo bởi: {{ order.createdBy || '-' }} | Tạo lúc: {{ order.createdAt | date: 'yyyy-MM-dd HH:mm' }} | Cập nhật: {{ order.updatedAt | date: 'yyyy-MM-dd HH:mm' }}</div>
+                <div class="view-value">
+                  Tạo bởi: {{ order.createdBy || '-' }} | Tạo lúc:
+                  {{ order.createdAt | date: 'yyyy-MM-dd HH:mm' }} | Cập nhật:
+                  {{ order.updatedAt | date: 'yyyy-MM-dd HH:mm' }}
+                </div>
               </div>
             </div>
           }
@@ -484,7 +646,17 @@ import { SearchSelectComponent, SearchSelectOption } from '../../shared/search-s
           <div class="form-actions">
             <button type="button" (click)="closeViewModal()">
               <span class="btn-content">
-                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                <svg
+                  class="btn-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  aria-hidden="true"
+                >
+                  <path d="M18 6 6 18" />
+                  <path d="m6 6 12 12" />
+                </svg>
                 <span>Đóng</span>
               </span>
             </button>
@@ -497,7 +669,11 @@ import { SearchSelectComponent, SearchSelectOption } from '../../shared/search-s
       [open]="showSaveConfirm()"
       [loading]="saving()"
       [title]="editingOrderId() ? 'Xác nhận cập nhật đơn hàng' : 'Xác nhận tạo đơn hàng'"
-      [message]="editingOrderId() ? 'Bạn có chắc chắn muốn lưu thay đổi đơn hàng này?' : 'Bạn có chắc chắn muốn tạo đơn hàng mới?'"
+      [message]="
+        editingOrderId()
+          ? 'Bạn có chắc chắn muốn lưu thay đổi đơn hàng này?'
+          : 'Bạn có chắc chắn muốn tạo đơn hàng mới?'
+      "
       (cancel)="showSaveConfirm.set(false)"
       (confirm)="confirmSave()"
     />
@@ -519,7 +695,6 @@ import { SearchSelectComponent, SearchSelectOption } from '../../shared/search-s
       (cancel)="cancelStatusChange()"
       (confirm)="confirmStatusChange()"
     />
-
   `,
   styles: `
     .card {
@@ -594,36 +769,36 @@ import { SearchSelectComponent, SearchSelectOption } from '../../shared/search-s
       margin-bottom: 1rem;
     }
 
-     input,
-     select,
-     button,
-     textarea {
-       border: 1px solid var(--border);
-       border-radius: 10px;
-       padding: 0.48rem 0.64rem;
-       background: #fff;
-     }
+    input,
+    select,
+    button,
+    textarea {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.48rem 0.64rem;
+      background: #fff;
+    }
 
-     .page-size app-search-select {
-       width: 76px;
-     }
+    .page-size app-search-select {
+      width: 76px;
+    }
 
-     td app-search-select {
-       min-width: 126px;
-       display: block;
-     }
+    td app-search-select {
+      min-width: 126px;
+      display: block;
+    }
 
-     .section-grid input,
-     .section-grid app-search-select {
-       min-height: 2.15rem;
-       width: 100%;
-       box-sizing: border-box;
-     }
+    .section-grid input,
+    .section-grid app-search-select {
+      min-height: 2.15rem;
+      width: 100%;
+      box-sizing: border-box;
+    }
 
-     .section-grid app-search-select {
-       display: block;
-       min-width: 0;
-     }
+    .section-grid app-search-select {
+      display: block;
+      min-width: 0;
+    }
 
     form button[type='submit'] {
       background: #f8fbff;
@@ -717,7 +892,6 @@ import { SearchSelectComponent, SearchSelectOption } from '../../shared/search-s
       color: #35507a;
       background: #f5f8fd;
     }
-
 
     .pager {
       display: flex;
@@ -826,15 +1000,15 @@ import { SearchSelectComponent, SearchSelectOption } from '../../shared/search-s
       pointer-events: none;
     }
 
-     .view-modal h3 {
-       margin: 0;
-       font-size: 1rem;
-       padding-bottom: 0.55rem;
-       border-bottom: 1px solid #eef2f8;
-       display: flex;
-       align-items: center;
-       gap: 0.5rem;
-     }
+    .view-modal h3 {
+      margin: 0;
+      font-size: 1rem;
+      padding-bottom: 0.55rem;
+      border-bottom: 1px solid #eef2f8;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
 
     .view-grid {
       display: grid;
@@ -922,15 +1096,15 @@ import { SearchSelectComponent, SearchSelectOption } from '../../shared/search-s
       border: 1px solid #fca5a5;
     }
 
-     .form-modal h3 {
-       margin: 0 0 0.9rem;
-       font-size: 1rem;
-       padding-bottom: 0.65rem;
-       border-bottom: 1px solid #eef2f8;
-       display: flex;
-       align-items: center;
-       gap: 0.5rem;
-     }
+    .form-modal h3 {
+      margin: 0 0 0.9rem;
+      font-size: 1rem;
+      padding-bottom: 0.65rem;
+      border-bottom: 1px solid #eef2f8;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
 
     .title-with-icon {
       display: inline-flex;
@@ -939,32 +1113,32 @@ import { SearchSelectComponent, SearchSelectOption } from '../../shared/search-s
     }
 
     .title-icon {
-       width: 1rem;
-       height: 1rem;
-       color: #2e4368;
-     }
+      width: 1rem;
+      height: 1rem;
+      color: #2e4368;
+    }
 
-     .close-btn {
-       background: none;
-       border: none;
-       cursor: pointer;
-       padding: 0.3rem;
-       display: flex;
-       align-items: center;
-       justify-content: center;
-       color: #667085;
-       transition: color 0.2s ease;
-       margin-left: auto;
-     }
+    .close-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0.3rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #667085;
+      transition: color 0.2s ease;
+      margin-left: auto;
+    }
 
-     .close-btn:hover {
-       color: #1a202c;
-     }
+    .close-btn:hover {
+      color: #1a202c;
+    }
 
-     .close-btn svg {
-       width: 1.25rem;
-       height: 1.25rem;
-     }
+    .close-btn svg {
+      width: 1.25rem;
+      height: 1.25rem;
+    }
 
     .form-sections {
       display: grid;
@@ -989,24 +1163,24 @@ import { SearchSelectComponent, SearchSelectOption } from '../../shared/search-s
       color: #2e4368;
     }
 
-     .section-grid {
-       display: grid;
-       grid-template-columns: repeat(2, minmax(0, 1fr));
-       column-gap: var(--order-form-grid-gap);
-       row-gap: var(--order-form-grid-gap);
-     }
+    .section-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: var(--order-form-grid-gap);
+      row-gap: var(--order-form-grid-gap);
+    }
 
-      .section-grid.product-grid {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-      }
+    .section-grid.product-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
 
-     .section-grid > * {
-       min-width: 0;
-     }
+    .section-grid > * {
+      min-width: 0;
+    }
 
-     .section-grid.product-grid .col-2 {
-       grid-column: span 2;
-     }
+    .section-grid.product-grid .col-2 {
+      grid-column: span 2;
+    }
 
     .section-grid label {
       display: grid;
@@ -1030,7 +1204,7 @@ import { SearchSelectComponent, SearchSelectOption } from '../../shared/search-s
       box-sizing: border-box;
       text-align: right;
       font-variant-numeric: tabular-nums;
-      font-feature-settings: "tnum";
+      font-feature-settings: 'tnum';
     }
 
     .price-unit {
@@ -1045,23 +1219,22 @@ import { SearchSelectComponent, SearchSelectOption } from '../../shared/search-s
       line-height: 1;
     }
 
+    .form-section.general .section-grid,
+    .form-section.pricing .section-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
 
-      .form-section.general .section-grid,
-      .form-section.pricing .section-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-      }
+    .form-section.general .section-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 
-      .form-section.general .section-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
+    .section-grid.product-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
 
-      .section-grid.product-grid {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-      }
-
-      .section-grid.product-grid .col-2 {
-        grid-column: span 2;
-      }
+    .section-grid.product-grid .col-2 {
+      grid-column: span 2;
+    }
 
     .form-section.status .section-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1155,229 +1328,229 @@ import { SearchSelectComponent, SearchSelectOption } from '../../shared/search-s
       }
     }
 
-     @media (max-width: 1180px) {
-       .form-sections {
-         grid-template-columns: 1fr;
-       }
-
-       .view-grid {
-         grid-template-columns: repeat(2, minmax(0, 1fr));
-       }
-
-       .form-section.general .section-grid,
-       .form-section.product .section-grid,
-       .form-section.pricing .section-grid,
-       .form-section.status .section-grid {
-         grid-template-columns: repeat(2, minmax(0, 1fr));
-       }
-
-        .section-grid.product-grid {
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-
-        .section-grid.product-grid .col-2 {
-          grid-column: span 2;
-        }
+    @media (max-width: 1180px) {
+      .form-sections {
+        grid-template-columns: 1fr;
       }
 
-      @media (max-width: 960px) {
-        .section-grid {
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-
-        .section-grid.product-grid {
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-
-        .section-grid.product-grid .col-2 {
-          grid-column: span 2;
-        }
-     }
-
-      @media (max-width: 768px) {
-        .table-wrap {
-          border: none;
-          background: transparent;
-        }
-
-        table {
-          min-width: 0;
-          border-collapse: separate;
-        }
-
-        thead {
-          display: none;
-        }
-
-        tbody {
-          display: grid;
-          gap: 0.6rem;
-        }
-
-        tbody tr {
-          display: block;
-          border: 1px solid #e6edf7;
-          border-radius: 12px;
-          background: #fff;
-          box-shadow: 0 4px 14px rgba(20, 39, 70, 0.06);
-          padding: 0.2rem 0;
-        }
-
-        tbody tr td {
-          display: flex;
-          align-items: flex-start;
-          justify-content: space-between;
-          gap: 0.75rem;
-          padding: 0.52rem 0.72rem;
-          white-space: normal;
-          border-bottom: 1px solid #f2f5fa;
-          min-width: 0;
-          overflow: hidden;
-        }
-
-        tbody tr td > * {
-          min-width: 0;
-        }
-
-        tbody tr td::before {
-          content: attr(data-label);
-          font-weight: 600;
-          color: #5f708f;
-          font-size: 0.78rem;
-          min-width: 4rem;
-        }
-
-        tbody tr td:last-child {
-          border-bottom: none;
-        }
-
-        td app-search-select {
-          min-width: 0;
-          width: auto;
-        }
-
-        .actions-cell {
-          display: grid;
-          gap: 0.4rem;
-          justify-content: stretch;
-        }
-
-        .actions-cell::before {
-          margin-top: 0.2rem;
-        }
-
-        .actions-cell button {
-          width: 100%;
-        }
-
-        .table-empty-row {
-          padding: 0;
-        }
-
-        .table-empty-row td {
-          display: block;
-          text-align: center;
-          border-bottom: none;
-          padding: 0.9rem;
-        }
-
-        .table-empty-row td::before {
-          display: none;
-        }
+      .view-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
-      @media (max-width: 720px) {
-        .modal-overlay {
-          padding: 0;
-        }
-
-        .form-modal {
-          width: 100%;
-          height: 100dvh;
-          max-height: 100dvh;
-          border-radius: 0;
-          padding: 0.75rem 0.65rem 0.9rem;
-        }
-
-        .form-modal h3 {
-          position: sticky;
-          top: 0;
-          z-index: 2;
-          background: #fff;
-          padding-top: 0.08rem;
-          margin-bottom: 0.65rem;
-        }
-
-        .form-sections {
-          gap: 0.5rem;
-        }
-
-        .form-section {
-          padding: 0.52rem;
-          border-radius: 10px;
-        }
-
-        .form-section h4 {
-          margin-bottom: 0.42rem;
-          font-size: 0.83rem;
-        }
-
-        .section-grid label {
-          font-size: 0.82rem;
-        }
-
-        .form-actions {
-          position: sticky;
-          bottom: 0;
-          z-index: 2;
-          background: #fff;
-          margin-top: 0.8rem;
-          padding-top: 0.65rem;
-          padding-bottom: 0.2rem;
-          box-shadow: 0 -8px 16px rgba(22, 31, 56, 0.08);
-        }
-
-        .form-actions button {
-          flex: 1 1 0;
-        }
-
-        .pager {
-          align-items: stretch;
-        }
-
-        .pager-meta,
-        .pager-controls {
-          width: 100%;
-          justify-content: space-between;
-        }
-
-        .pager-btn {
-          flex: 1 1 0;
-        }
-
-        .pager-current {
-          flex: 1 1 100%;
-          text-align: center;
-          order: -1;
-        }
-
-        .section-grid {
-          grid-template-columns: 1fr;
-        }
-
-        .section-grid.product-grid {
-          grid-template-columns: 1fr;
-        }
-
-        .section-grid.product-grid .col-2 {
-          grid-column: span 1;
-        }
-
-        .view-grid {
-          grid-template-columns: 1fr;
-        }
+      .form-section.general .section-grid,
+      .form-section.product .section-grid,
+      .form-section.pricing .section-grid,
+      .form-section.status .section-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
-  `
+
+      .section-grid.product-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .section-grid.product-grid .col-2 {
+        grid-column: span 2;
+      }
+    }
+
+    @media (max-width: 960px) {
+      .section-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .section-grid.product-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .section-grid.product-grid .col-2 {
+        grid-column: span 2;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .table-wrap {
+        border: none;
+        background: transparent;
+      }
+
+      table {
+        min-width: 0;
+        border-collapse: separate;
+      }
+
+      thead {
+        display: none;
+      }
+
+      tbody {
+        display: grid;
+        gap: 0.6rem;
+      }
+
+      tbody tr {
+        display: block;
+        border: 1px solid #e6edf7;
+        border-radius: 12px;
+        background: #fff;
+        box-shadow: 0 4px 14px rgba(20, 39, 70, 0.06);
+        padding: 0.2rem 0;
+      }
+
+      tbody tr td {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 0.75rem;
+        padding: 0.52rem 0.72rem;
+        white-space: normal;
+        border-bottom: 1px solid #f2f5fa;
+        min-width: 0;
+        overflow: hidden;
+      }
+
+      tbody tr td > * {
+        min-width: 0;
+      }
+
+      tbody tr td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #5f708f;
+        font-size: 0.78rem;
+        min-width: 4rem;
+      }
+
+      tbody tr td:last-child {
+        border-bottom: none;
+      }
+
+      td app-search-select {
+        min-width: 0;
+        width: auto;
+      }
+
+      .actions-cell {
+        display: grid;
+        gap: 0.4rem;
+        justify-content: stretch;
+      }
+
+      .actions-cell::before {
+        margin-top: 0.2rem;
+      }
+
+      .actions-cell button {
+        width: 100%;
+      }
+
+      .table-empty-row {
+        padding: 0;
+      }
+
+      .table-empty-row td {
+        display: block;
+        text-align: center;
+        border-bottom: none;
+        padding: 0.9rem;
+      }
+
+      .table-empty-row td::before {
+        display: none;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .modal-overlay {
+        padding: 0;
+      }
+
+      .form-modal {
+        width: 100%;
+        height: 100dvh;
+        max-height: 100dvh;
+        border-radius: 0;
+        padding: 0.75rem 0.65rem 0.9rem;
+      }
+
+      .form-modal h3 {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        background: #fff;
+        padding-top: 0.08rem;
+        margin-bottom: 0.65rem;
+      }
+
+      .form-sections {
+        gap: 0.5rem;
+      }
+
+      .form-section {
+        padding: 0.52rem;
+        border-radius: 10px;
+      }
+
+      .form-section h4 {
+        margin-bottom: 0.42rem;
+        font-size: 0.83rem;
+      }
+
+      .section-grid label {
+        font-size: 0.82rem;
+      }
+
+      .form-actions {
+        position: sticky;
+        bottom: 0;
+        z-index: 2;
+        background: #fff;
+        margin-top: 0.8rem;
+        padding-top: 0.65rem;
+        padding-bottom: 0.2rem;
+        box-shadow: 0 -8px 16px rgba(22, 31, 56, 0.08);
+      }
+
+      .form-actions button {
+        flex: 1 1 0;
+      }
+
+      .pager {
+        align-items: stretch;
+      }
+
+      .pager-meta,
+      .pager-controls {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .pager-btn {
+        flex: 1 1 0;
+      }
+
+      .pager-current {
+        flex: 1 1 100%;
+        text-align: center;
+        order: -1;
+      }
+
+      .section-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .section-grid.product-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .section-grid.product-grid .col-2 {
+        grid-column: span 1;
+      }
+
+      .view-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  `,
 })
 export class OrdersPage implements OnInit {
   @ViewChild('orderModalRoot') private orderModalRoot?: ElementRef<HTMLElement>;
@@ -1392,53 +1565,55 @@ export class OrdersPage implements OnInit {
   private readonly toastService = inject(ToastService);
 
   readonly orderStatuses = ORDER_STATUSES;
-  readonly statusUpdateOptions: OrderStatus[] = ORDER_STATUSES.filter((status) => status !== 'DELETED') as OrderStatus[];
+  readonly statusUpdateOptions: OrderStatus[] = ORDER_STATUSES.filter(
+    (status) => status !== 'DELETED',
+  ) as OrderStatus[];
   readonly paymentStatuses = PAYMENT_STATUSES;
   readonly orderStatusLabels = ORDER_STATUS_LABELS;
   readonly paymentStatusLabels = PAYMENT_STATUS_LABELS;
   readonly supplierOptions: string[] = [...SUPPLIER_OPTIONS];
 
-   readonly showFormModal = signal(false);
-   readonly formModalClosing = signal(false);
-   readonly showSaveConfirm = signal(false);
-   readonly showDeleteModal = signal(false);
-   readonly showStatusConfirm = signal(false);
-   readonly showViewModal = signal(false);
-   readonly viewModalClosing = signal(false);
-   readonly editingOrderId = signal<number | null>(null);
-   readonly viewingOrder = signal<Order | null>(null);
-   readonly originalEditStatus = signal<OrderStatus | null>(null);
-   readonly saving = signal(false);
-   readonly deleting = signal(false);
-   readonly statusSaving = signal(false);
-   readonly loading = signal(false);
-   readonly loadingEdit = signal(false);
-   readonly formError = signal('');
-   readonly customerLookupOptions = signal<SearchSelectOption[]>([]);
-   readonly customerLookupLoading = signal(false);
-   readonly customerLookupLoadingMore = signal(false);
-   readonly customerLookupHasMore = signal(false);
-   readonly productLookupOptions = signal<SearchSelectOption[]>([]);
-   readonly productLookupLoading = signal(false);
-   readonly productLookupLoadingMore = signal(false);
-   readonly productLookupHasMore = signal(false);
+  readonly showFormModal = signal(false);
+  readonly formModalClosing = signal(false);
+  readonly showSaveConfirm = signal(false);
+  readonly showDeleteModal = signal(false);
+  readonly showStatusConfirm = signal(false);
+  readonly showViewModal = signal(false);
+  readonly viewModalClosing = signal(false);
+  readonly editingOrderId = signal<number | null>(null);
+  readonly viewingOrder = signal<Order | null>(null);
+  readonly originalEditStatus = signal<OrderStatus | null>(null);
+  readonly saving = signal(false);
+  readonly deleting = signal(false);
+  readonly statusSaving = signal(false);
+  readonly loading = signal(false);
+  readonly loadingEdit = signal(false);
+  readonly formError = signal('');
+  readonly customerLookupOptions = signal<SearchSelectOption[]>([]);
+  readonly customerLookupLoading = signal(false);
+  readonly customerLookupLoadingMore = signal(false);
+  readonly customerLookupHasMore = signal(false);
+  readonly productLookupOptions = signal<SearchSelectOption[]>([]);
+  readonly productLookupLoading = signal(false);
+  readonly productLookupLoadingMore = signal(false);
+  readonly productLookupHasMore = signal(false);
 
-   private deletingOrderId: number | null = null;
-   private pendingStatusOrderId: number | null = null;
-   private pendingStatusOrderCode: string | null = null;
-   private pendingStatusValue: OrderStatus | null = null;
-   private currencyRate = 1;
-   private customerLookupPage = 0;
-   private customerLookupSearch = '';
-   private productLookupPage = 0;
-   private productLookupSearch = '';
+  private deletingOrderId: number | null = null;
+  private pendingStatusOrderId: number | null = null;
+  private pendingStatusOrderCode: string | null = null;
+  private pendingStatusValue: OrderStatus | null = null;
+  private currencyRate = 1;
+  private customerLookupPage = 0;
+  private customerLookupSearch = '';
+  private productLookupPage = 0;
+  private productLookupSearch = '';
 
   readonly form = this.fb.nonNullable.group({
     customerName: [''],
     productName: [''],
     status: [''],
     fromDate: [firstDayOfYear()],
-    toDate: [today()]
+    toDate: [today()],
   });
 
   readonly orderForm = this.fb.nonNullable.group({
@@ -1449,6 +1624,7 @@ export class OrdersPage implements OnInit {
     specification: [''],
     quantity: [1, [Validators.required, Validators.min(1)]],
     sellingPrice: [0, [Validators.required, Validators.min(0)]],
+    amountSellingPrice: [0, [Validators.required, Validators.min(0)]],
     status: ['NEW' as OrderStatus, [Validators.required]],
     paymentStatus: ['UNPAID' as PaymentStatus, [Validators.required]],
     yuanPrice: [0],
@@ -1459,7 +1635,7 @@ export class OrdersPage implements OnInit {
     shippingPaymentDate: [''],
     refundAmount: [0],
     refundStatus: [''],
-    note: ['']
+    note: [''],
   });
 
   readonly pageData = signal<PagedResult<Order>>({
@@ -1467,7 +1643,7 @@ export class OrdersPage implements OnInit {
     page: 1,
     pageSize: 10,
     totalItems: 0,
-    totalPages: 1
+    totalPages: 1,
   });
 
   ngOnInit(): void {
@@ -1506,8 +1682,8 @@ export class OrdersPage implements OnInit {
       ...this.orderStatuses.map((status, index) => ({
         id: index + 1,
         label: this.orderStatusLabels[status],
-        raw: status
-      }))
+        raw: status,
+      })),
     ];
   }
 
@@ -1516,7 +1692,11 @@ export class OrdersPage implements OnInit {
   }
 
   pageSizeSelectOptions(): SearchSelectOption[] {
-    return [10, 20, 50].map((size, index) => ({ id: index + 1, label: String(size), raw: String(size) }));
+    return [10, 20, 50].map((size, index) => ({
+      id: index + 1,
+      label: String(size),
+      raw: String(size),
+    }));
   }
 
   selectPageSize(option: SearchSelectOption): void {
@@ -1525,7 +1705,11 @@ export class OrdersPage implements OnInit {
   }
 
   supplierSelectOptions(): SearchSelectOption[] {
-    return this.supplierOptionsForForm().map((source, index) => ({ id: index + 1, label: source, raw: source }));
+    return this.supplierOptionsForForm().map((source, index) => ({
+      id: index + 1,
+      label: source,
+      raw: source,
+    }));
   }
 
   selectSupplier(option: SearchSelectOption): void {
@@ -1536,7 +1720,7 @@ export class OrdersPage implements OnInit {
     return this.orderStatuses.map((status, index) => ({
       id: index + 1,
       label: this.orderStatusLabels[status],
-      raw: status
+      raw: status,
     }));
   }
 
@@ -1552,7 +1736,7 @@ export class OrdersPage implements OnInit {
     return this.paymentStatuses.map((status, index) => ({
       id: index + 1,
       label: this.paymentStatusLabels[status],
-      raw: status
+      raw: status,
     }));
   }
 
@@ -1577,6 +1761,7 @@ export class OrdersPage implements OnInit {
       specification: '',
       quantity: 1,
       sellingPrice: 0,
+      amountSellingPrice: 0,
       status: 'NEW',
       paymentStatus: 'UNPAID',
       yuanPrice: 0,
@@ -1587,7 +1772,7 @@ export class OrdersPage implements OnInit {
       shippingPaymentDate: '',
       refundAmount: 0,
       refundStatus: '',
-      note: ''
+      note: '',
     });
     this.orderForm.markAsPristine();
     this.showFormModal.set(true);
@@ -1609,7 +1794,7 @@ export class OrdersPage implements OnInit {
       .detail(id)
       .pipe(
         timeout(20000),
-        finalize(() => this.loadingEdit.set(false))
+        finalize(() => this.loadingEdit.set(false)),
       )
       .subscribe({
         next: (order) => {
@@ -1622,6 +1807,7 @@ export class OrdersPage implements OnInit {
             specification: order.specification ?? '',
             quantity: order.quantity,
             sellingPrice: order.sellingPrice,
+            amountSellingPrice: order.amountSellingPrice,
             status: order.status,
             paymentStatus: order.paymentStatus,
             yuanPrice: order.yuanPrice ?? 0,
@@ -1632,7 +1818,7 @@ export class OrdersPage implements OnInit {
             shippingPaymentDate: order.shippingPaymentDate?.slice(0, 10) ?? '',
             refundAmount: order.refundAmount ?? 0,
             refundStatus: order.refundStatus ?? '',
-            note: order.note ?? ''
+            note: order.note ?? '',
           });
           this.orderForm.markAsPristine();
           this.loadLatestCurrencyRate();
@@ -1645,7 +1831,7 @@ export class OrdersPage implements OnInit {
           this.editingOrderId.set(null);
           this.originalEditStatus.set(null);
           this.toastService.error('Không thể tải chi tiết đơn hàng. Vui lòng thử lại.');
-        }
+        },
       });
   }
 
@@ -1677,7 +1863,7 @@ export class OrdersPage implements OnInit {
     }
 
     const focusables = host.querySelectorAll<HTMLElement>(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
     );
 
     if (!focusables.length) {
@@ -1726,38 +1912,51 @@ export class OrdersPage implements OnInit {
     this.saving.set(true);
 
     const raw = this.orderForm.getRawValue();
-    const orderCode = raw.orderCode?.trim() || (!this.editingOrderId() ? generateOrderCode() : raw.orderCode);
+    const orderCode =
+      raw.orderCode?.trim() || (!this.editingOrderId() ? generateOrderCode() : raw.orderCode);
     const payload: OrderUpsertRequest = {
       ...raw,
       orderCode,
-      shippingPaymentDate: raw.shippingPaymentDate || null
+      shippingPaymentDate: raw.shippingPaymentDate || null,
     };
 
     const editingId = this.editingOrderId();
     const previousStatus = this.originalEditStatus();
-    const shouldSyncStatus = editingId !== null && previousStatus !== null && payload.status !== previousStatus;
+    const shouldSyncStatus =
+      editingId !== null && previousStatus !== null && payload.status !== previousStatus;
 
-    const request$ = editingId !== null
-      ? this.ordersService
-          .update(editingId, payload)
-          .pipe(switchMap((updatedOrder) => (shouldSyncStatus ? this.ordersService.updateStatus(editingId, payload.status) : of(updatedOrder))))
-      : this.ensureMasterDataForCreate(payload).pipe(switchMap(() => this.ordersService.create(payload)));
+    const request$ =
+      editingId !== null
+        ? this.ordersService
+            .update(editingId, payload)
+            .pipe(
+              switchMap((updatedOrder) =>
+                shouldSyncStatus
+                  ? this.ordersService.updateStatus(editingId, payload.status)
+                  : of(updatedOrder),
+              ),
+            )
+        : this.ensureMasterDataForCreate(payload).pipe(
+            switchMap(() => this.ordersService.create(payload)),
+          );
 
     request$
       .pipe(
         timeout(20000),
-        finalize(() => this.saving.set(false))
+        finalize(() => this.saving.set(false)),
       )
       .subscribe({
-      next: () => {
-        this.toastService.success(editingId !== null ? 'Cập nhật đơn hàng thành công.' : 'Tạo đơn hàng thành công.');
-        this.closeFormModal();
-        this.fetch(this.pageData().page);
-      },
-      error: (error) => {
-        this.formError.set(resolveOrderSaveError(error));
-      }
-    });
+        next: () => {
+          this.toastService.success(
+            editingId !== null ? 'Cập nhật đơn hàng thành công.' : 'Tạo đơn hàng thành công.',
+          );
+          this.closeFormModal();
+          this.fetch(this.pageData().page);
+        },
+        error: (error) => {
+          this.formError.set(resolveOrderSaveError(error));
+        },
+      });
   }
 
   onDelete(id: number): void {
@@ -1777,7 +1976,11 @@ export class OrdersPage implements OnInit {
     }
 
     const nextStatus = rawStatus as OrderStatus;
-    if (!this.statusUpdateOptions.includes(nextStatus) || nextStatus === order.status || this.statusSaving()) {
+    if (
+      !this.statusUpdateOptions.includes(nextStatus) ||
+      nextStatus === order.status ||
+      this.statusSaving()
+    ) {
       return;
     }
 
@@ -1809,7 +2012,7 @@ export class OrdersPage implements OnInit {
       .updateStatus(targetId, nextStatus)
       .pipe(
         timeout(20000),
-        finalize(() => this.statusSaving.set(false))
+        finalize(() => this.statusSaving.set(false)),
       )
       .subscribe({
         next: () => {
@@ -1820,17 +2023,17 @@ export class OrdersPage implements OnInit {
         error: () => {
           this.cancelStatusChange();
           this.toastService.error('Không thể cập nhật trạng thái. Vui lòng thử lại.');
-        }
+        },
       });
   }
 
-   statusConfirmMessage(): string {
-     if (!this.pendingStatusOrderCode || !this.pendingStatusValue) {
-       return 'Bạn có chắc chắn muốn cập nhật trạng thái đơn hàng?';
-     }
+  statusConfirmMessage(): string {
+    if (!this.pendingStatusOrderCode || !this.pendingStatusValue) {
+      return 'Bạn có chắc chắn muốn cập nhật trạng thái đơn hàng?';
+    }
 
-     return `Bạn có chắc chắn muốn cập nhật đơn ${this.pendingStatusOrderCode} sang trạng thái "${this.orderStatusLabels[this.pendingStatusValue]}"?`;
-   }
+    return `Bạn có chắc chắn muốn cập nhật đơn ${this.pendingStatusOrderCode} sang trạng thái "${this.orderStatusLabels[this.pendingStatusValue]}"?`;
+  }
 
   onCustomerTyped(value: string): void {
     const customerName = value.trim();
@@ -1859,18 +2062,52 @@ export class OrdersPage implements OnInit {
     input.value = this.formatNumberDisplay(rawValue);
   }
 
+  onPriceInputFloat(event: Event, fieldName: string): void {
+    const input = event.target as HTMLInputElement;
+    if (!input) return;
+
+    let value = input.value;
+
+    // Chỉ cho phép số và dấu .
+    value = value.replace(/[^0-9.]/g, '');
+
+    // Chỉ giữ lại 1 dấu .
+    const parts = value.split('.');
+    if (parts.length > 2) {
+      value = parts[0] + '.' + parts.slice(1).join('');
+    }
+
+    input.value = value;
+  }
+
   savePriceValue(event: Event, fieldName: string): void {
     const input = event.target as HTMLInputElement;
     if (!input) return;
 
-    const rawValue = input.value.replace(/[^0-9]/g, '');
-    const numValue = Number(rawValue) || 0;
+    let rawValue = input.value;
+
+    // Cho phép số và dấu .
+    rawValue = rawValue.replace(/[^0-9.]/g, '');
+
+    // Chỉ giữ lại 1 dấu .
+    const parts = rawValue.split('.');
+    if (parts.length > 2) {
+      rawValue = parts[0] + '.' + parts.slice(1).join('');
+    }
+
+    const numValue = parseFloat(rawValue) || 0;
 
     this.orderForm.get(fieldName)?.setValue(numValue);
-    input.value = this.formatNumberDisplay(rawValue);
+
+    // Hiển thị lại giá trị
+    input.value = numValue.toString();
 
     if (fieldName === 'yuanPrice') {
       this.updateImportPriceFromYuan(numValue);
+    }
+
+    if (fieldName === 'sellingPrice') {
+      this.updateAmountSellingPriceFromSellingPrice();
     }
   }
 
@@ -1880,11 +2117,21 @@ export class OrdersPage implements OnInit {
   }
 
   private formatPriceInputsDisplay(): void {
-    const priceFields = ['sellingPrice', 'yuanPrice', 'importPrice', 'warehousePayment', 'shippingWeightFee', 'refundAmount'];
-    priceFields.forEach(fieldName => {
+    const priceFields = [
+      'sellingPrice',
+      'amountSellingPrice',
+      'yuanPrice',
+      'importPrice',
+      'warehousePayment',
+      'shippingWeightFee',
+      'refundAmount',
+    ];
+    priceFields.forEach((fieldName) => {
       const control = this.orderForm.get(fieldName);
       if (control?.value) {
-        const input = document.querySelector(`input[formControlName="${fieldName}"]`) as HTMLInputElement;
+        const input = document.querySelector(
+          `input[formControlName="${fieldName}"]`,
+        ) as HTMLInputElement;
         if (input) {
           input.value = this.formatNumberDisplay(control.value.toString());
         }
@@ -1905,7 +2152,7 @@ export class OrdersPage implements OnInit {
         },
         error: () => {
           this.currencyRate = 1;
-        }
+        },
       });
   }
 
@@ -1913,9 +2160,36 @@ export class OrdersPage implements OnInit {
     const importPrice = Math.round(yuanPrice * this.currencyRate);
     this.orderForm.controls.importPrice.setValue(importPrice);
 
-    const input = document.querySelector('input[formControlName="importPrice"]') as HTMLInputElement | null;
+    const input = document.querySelector(
+      'input[formControlName="importPrice"]',
+    ) as HTMLInputElement | null;
     if (input) {
       input.value = this.formatNumberDisplay(String(importPrice));
+    }
+  }
+
+  public updateAmountSellingPriceFromSellingPrice(): void {
+    const quantity = Number(this.orderForm.get('quantity')?.value || 0);
+    const sellingPrice = Number(this.orderForm.get('sellingPrice')?.value || 0);
+
+    // Làm tròn 2 chữ số thập phân
+    const amountSellingPrice =
+      Math.round(sellingPrice * quantity * 100) / 100;
+
+    this.orderForm.controls.amountSellingPrice.setValue(
+      amountSellingPrice,
+      { emitEvent: false }
+    );
+
+    const input = document.querySelector(
+      'input[formControlName="amountSellingPrice"]'
+    ) as HTMLInputElement | null;
+
+    if (input) {
+      input.value = amountSellingPrice.toLocaleString('vi-VN', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2,
+      });
     }
   }
 
@@ -1925,7 +2199,11 @@ export class OrdersPage implements OnInit {
   }
 
   loadMoreCustomers(): void {
-    if (!this.customerLookupHasMore() || this.customerLookupLoading() || this.customerLookupLoadingMore()) {
+    if (
+      !this.customerLookupHasMore() ||
+      this.customerLookupLoading() ||
+      this.customerLookupLoadingMore()
+    ) {
       return;
     }
 
@@ -1944,7 +2222,11 @@ export class OrdersPage implements OnInit {
   }
 
   loadMoreProducts(): void {
-    if (!this.productLookupHasMore() || this.productLookupLoading() || this.productLookupLoadingMore()) {
+    if (
+      !this.productLookupHasMore() ||
+      this.productLookupLoading() ||
+      this.productLookupLoadingMore()
+    ) {
       return;
     }
 
@@ -1959,7 +2241,8 @@ export class OrdersPage implements OnInit {
     this.orderForm.patchValue({
       productName: product?.name?.trim() || option.label,
       specification: currentSpecification || product?.specification || '',
-      sellingPrice: currentSellingPrice > 0 ? currentSellingPrice : Number(product?.defaultSellingPrice ?? 0)
+      sellingPrice:
+        currentSellingPrice > 0 ? currentSellingPrice : Number(product?.defaultSellingPrice ?? 0),
     });
   }
 
@@ -1972,37 +2255,36 @@ export class OrdersPage implements OnInit {
     return [currentSupplier, ...this.supplierOptions];
   }
 
-   rowStatusOptions(order: Order): OrderStatus[] {
-     // Always include current status first, then other available statuses
-     const hasCurrentStatus = this.statusUpdateOptions.includes(order.status);
-     if (hasCurrentStatus) {
-       // Put current status first for better UX
-       return [order.status, ...this.statusUpdateOptions.filter(s => s !== order.status)];
-     }
-     // Current status not in standard options, add it first
-     return [order.status, ...this.statusUpdateOptions];
-   }
+  rowStatusOptions(order: Order): OrderStatus[] {
+    // Always include current status first, then other available statuses
+    const hasCurrentStatus = this.statusUpdateOptions.includes(order.status);
+    if (hasCurrentStatus) {
+      // Put current status first for better UX
+      return [order.status, ...this.statusUpdateOptions.filter((s) => s !== order.status)];
+    }
+    // Current status not in standard options, add it first
+    return [order.status, ...this.statusUpdateOptions];
+  }
 
-   rowStatusSelectOptions(order: Order): SearchSelectOption[] {
-     return this.rowStatusOptions(order).map((status, index) => ({
-       id: index + 1,
-       label: this.orderStatusLabels[status],
-       raw: status
-     }));
-   }
+  rowStatusSelectOptions(order: Order): SearchSelectOption[] {
+    return this.rowStatusOptions(order).map((status, index) => ({
+      id: index + 1,
+      label: this.orderStatusLabels[status],
+      raw: status,
+    }));
+  }
 
-   requestStatusOptionChange(order: Order, option: SearchSelectOption): void {
-     const status = option.raw as OrderStatus | undefined;
-     if (!status) {
-       return;
-     }
-     this.requestStatusChange(order, status);
-   }
+  requestStatusOptionChange(order: Order, option: SearchSelectOption): void {
+    const status = option.raw as OrderStatus | undefined;
+    if (!status) {
+      return;
+    }
+    this.requestStatusChange(order, status);
+  }
 
-   isRowStatusReadonly(order: Order): boolean {
-     return this.statusSaving() || order.status === 'DELETED';
-   }
-
+  isRowStatusReadonly(order: Order): boolean {
+    return this.statusSaving() || order.status === 'DELETED';
+  }
 
   openViewModal(id: number): void {
     if (this.loadingEdit()) {
@@ -2014,7 +2296,7 @@ export class OrdersPage implements OnInit {
       .detail(id)
       .pipe(
         timeout(20000),
-        finalize(() => this.loadingEdit.set(false))
+        finalize(() => this.loadingEdit.set(false)),
       )
       .subscribe({
         next: (order) => {
@@ -2024,7 +2306,7 @@ export class OrdersPage implements OnInit {
         },
         error: () => {
           this.toastService.error('Không thể tải chi tiết đơn hàng. Vui lòng thử lại.');
-        }
+        },
       });
   }
 
@@ -2037,71 +2319,72 @@ export class OrdersPage implements OnInit {
     }, 180);
   }
 
-   confirmDelete(): void {
-     const targetOrderId = this.deletingOrderId;
-     if (!targetOrderId || this.deleting()) {
-       this.cancelDelete();
-       return;
-     }
+  confirmDelete(): void {
+    const targetOrderId = this.deletingOrderId;
+    if (!targetOrderId || this.deleting()) {
+      this.cancelDelete();
+      return;
+    }
 
-     this.cancelDelete();
-     this.deleting.set(true);
-     this.ordersService
-       .softDelete(targetOrderId)
-       .pipe(
-         timeout(20000),
-         finalize(() => this.deleting.set(false))
-       )
-       .subscribe({
-         next: () => {
-           this.toastService.success('Đã xóa đơn hàng.');
-           this.fetch(this.pageData().page);
-         },
-         error: () => {
-           this.toastService.error('Không thể xóa đơn hàng. Vui lòng thử lại.');
-         }
-       });
-   }
+    this.cancelDelete();
+    this.deleting.set(true);
+    this.ordersService
+      .softDelete(targetOrderId)
+      .pipe(
+        timeout(20000),
+        finalize(() => this.deleting.set(false)),
+      )
+      .subscribe({
+        next: () => {
+          this.toastService.success('Đã xóa đơn hàng.');
+          this.fetch(this.pageData().page);
+        },
+        error: () => {
+          this.toastService.error('Không thể xóa đơn hàng. Vui lòng thử lại.');
+        },
+      });
+  }
 
+  pagingSummary(): string {
+    const data = this.pageData();
+    if (!data.totalItems) {
+      return '0 kết quả';
+    }
 
-   pagingSummary(): string {
-     const data = this.pageData();
-     if (!data.totalItems) {
-       return '0 kết quả';
-     }
+    const from = (data.page - 1) * data.pageSize + 1;
+    const to = Math.min(data.page * data.pageSize, data.totalItems);
+    return `${from}-${to} / ${data.totalItems}`;
+  }
 
-     const from = (data.page - 1) * data.pageSize + 1;
-     const to = Math.min(data.page * data.pageSize, data.totalItems);
-     return `${from}-${to} / ${data.totalItems}`;
-   }
+  private generateCustomerCode(): string {
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const dd = String(now.getDate()).padStart(2, '0');
+    const hh = String(now.getHours()).padStart(2, '0');
+    const mi = String(now.getMinutes()).padStart(2, '0');
+    const ss = String(now.getSeconds()).padStart(2, '0');
+    const ms = String(now.getMilliseconds()).padStart(3, '0');
+    return `CUS${yyyy}${mm}${dd}${hh}${mi}${ss}${ms}`;
+  }
 
-   private generateCustomerCode(): string {
-     const now = new Date();
-     const yyyy = now.getFullYear();
-     const mm = String(now.getMonth() + 1).padStart(2, '0');
-     const dd = String(now.getDate()).padStart(2, '0');
-     const hh = String(now.getHours()).padStart(2, '0');
-     const mi = String(now.getMinutes()).padStart(2, '0');
-     const ss = String(now.getSeconds()).padStart(2, '0');
-     const ms = String(now.getMilliseconds()).padStart(3, '0');
-     return `CUS${yyyy}${mm}${dd}${hh}${mi}${ss}${ms}`;
-   }
-
-   private generateProductCode(): string {
-     const now = new Date();
-     const yyyy = now.getFullYear();
-     const mm = String(now.getMonth() + 1).padStart(2, '0');
-     const dd = String(now.getDate()).padStart(2, '0');
-     const hh = String(now.getHours()).padStart(2, '0');
-     const mi = String(now.getMinutes()).padStart(2, '0');
-     const ss = String(now.getSeconds()).padStart(2, '0');
-     const ms = String(now.getMilliseconds()).padStart(3, '0');
-     return `PRD${yyyy}${mm}${dd}${hh}${mi}${ss}${ms}`;
-   }
+  private generateProductCode(): string {
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const dd = String(now.getDate()).padStart(2, '0');
+    const hh = String(now.getHours()).padStart(2, '0');
+    const mi = String(now.getMinutes()).padStart(2, '0');
+    const ss = String(now.getSeconds()).padStart(2, '0');
+    const ms = String(now.getMilliseconds()).padStart(3, '0');
+    return `PRD${yyyy}${mm}${dd}${hh}${mi}${ss}${ms}`;
+  }
 
   private ensureMasterDataForCreate(payload: OrderUpsertRequest) {
     return this.ensureCustomerExists(payload.customerName).pipe(
-      switchMap(() => this.ensureProductExists(payload.productName, payload.specification, payload.sellingPrice))
+      switchMap(() =>
+        this.ensureProductExists(payload.productName, payload.specification, payload.sellingPrice),
+      ),
     );
   }
 
@@ -2111,31 +2394,35 @@ export class OrdersPage implements OnInit {
       return of(void 0);
     }
 
-    return this.customersService.list({ page: 1, pageSize: OrdersPage.LOOKUP_PAGE_SIZE, search: normalizedName }).pipe(
-      switchMap((result) => {
-        const exists = result.items.some((customer) => normalizeText(customer.fullName) === normalizeText(normalizedName));
-        if (exists) {
-          return of(void 0);
-        }
-
-        const request: CustomerUpsertRequest = {
-          customerCode: this.generateCustomerCode(),
-          fullName: normalizedName,
-          phone: '',
-          email: '',
-          address: '',
-          note: 'Tự động tạo từ đơn hàng'
-        };
-
-        return this.customersService.create(request).pipe(
-          map(() => void 0),
-          switchMap(() => {
-            this.toastService.success(`Đã tự động thêm khách hàng mới: ${normalizedName}`);
+    return this.customersService
+      .list({ page: 1, pageSize: OrdersPage.LOOKUP_PAGE_SIZE, search: normalizedName })
+      .pipe(
+        switchMap((result) => {
+          const exists = result.items.some(
+            (customer) => normalizeText(customer.fullName) === normalizeText(normalizedName),
+          );
+          if (exists) {
             return of(void 0);
-          })
-        );
-      })
-    );
+          }
+
+          const request: CustomerUpsertRequest = {
+            customerCode: this.generateCustomerCode(),
+            fullName: normalizedName,
+            phone: '',
+            email: '',
+            address: '',
+            note: 'Tự động tạo từ đơn hàng',
+          };
+
+          return this.customersService.create(request).pipe(
+            map(() => void 0),
+            switchMap(() => {
+              this.toastService.success(`Đã tự động thêm khách hàng mới: ${normalizedName}`);
+              return of(void 0);
+            }),
+          );
+        }),
+      );
   }
 
   private ensureProductExists(productName: string, specification?: string, sellingPrice?: number) {
@@ -2144,31 +2431,35 @@ export class OrdersPage implements OnInit {
       return of(void 0);
     }
 
-    return this.productsService.list({ page: 1, pageSize: OrdersPage.LOOKUP_PAGE_SIZE, search: normalizedName }).pipe(
-      switchMap((result) => {
-        const exists = result.items.some((product) => normalizeText(product.name) === normalizeText(normalizedName));
-        if (exists) {
-          return of(void 0);
-        }
-
-        const request: ProductUpsertRequest = {
-          productCode: this.generateProductCode(),
-          name: normalizedName,
-          specification: specification?.trim() || '',
-          unit: '',
-          defaultSellingPrice: Number(sellingPrice ?? 0),
-          note: 'Tự động tạo từ đơn hàng'
-        };
-
-        return this.productsService.create(request).pipe(
-          map(() => void 0),
-          switchMap(() => {
-            this.toastService.success(`Đã tự động thêm sản phẩm mới: ${normalizedName}`);
+    return this.productsService
+      .list({ page: 1, pageSize: OrdersPage.LOOKUP_PAGE_SIZE, search: normalizedName })
+      .pipe(
+        switchMap((result) => {
+          const exists = result.items.some(
+            (product) => normalizeText(product.name) === normalizeText(normalizedName),
+          );
+          if (exists) {
             return of(void 0);
-          })
-        );
-      })
-    );
+          }
+
+          const request: ProductUpsertRequest = {
+            productCode: this.generateProductCode(),
+            name: normalizedName,
+            specification: specification?.trim() || '',
+            unit: '',
+            defaultSellingPrice: Number(sellingPrice ?? 0),
+            note: 'Tự động tạo từ đơn hàng',
+          };
+
+          return this.productsService.create(request).pipe(
+            map(() => void 0),
+            switchMap(() => {
+              this.toastService.success(`Đã tự động thêm sản phẩm mới: ${normalizedName}`);
+              return of(void 0);
+            }),
+          );
+        }),
+      );
   }
 
   private tryApplyMatchedProduct(productName: string): void {
@@ -2177,7 +2468,9 @@ export class OrdersPage implements OnInit {
       return;
     }
 
-    const matched = this.productLookupOptions().find((option) => normalizeText(option.label) === normalizedName);
+    const matched = this.productLookupOptions().find(
+      (option) => normalizeText(option.label) === normalizedName,
+    );
     if (!matched) {
       return;
     }
@@ -2191,10 +2484,10 @@ export class OrdersPage implements OnInit {
     const currentSellingPrice = Number(this.orderForm.controls.sellingPrice.value) || 0;
     this.orderForm.patchValue({
       specification: currentSpecification || product.specification || '',
-      sellingPrice: currentSellingPrice > 0 ? currentSellingPrice : Number(product.defaultSellingPrice ?? 0)
+      sellingPrice:
+        currentSellingPrice > 0 ? currentSellingPrice : Number(product.defaultSellingPrice ?? 0),
     });
   }
-
 
   private fetch(page: number): void {
     const filters = this.form.getRawValue();
@@ -2209,18 +2502,18 @@ export class OrdersPage implements OnInit {
         status: filters.status as OrderStatus | '',
         fromDate: filters.fromDate,
         toDate: filters.toDate,
-        sort: 'desc'
+        sort: 'desc',
       })
       .pipe(
         timeout(20000),
-        finalize(() => this.loading.set(false))
+        finalize(() => this.loading.set(false)),
       )
       .subscribe({
         next: (result) => this.pageData.set(result),
         error: () => {
           // Keep current data and avoid uncaught errors that can lock interaction flows.
           this.toastService.error('Không thể tải danh sách đơn hàng. Vui lòng thử lại.');
-        }
+        },
       });
   }
 
@@ -2231,29 +2524,32 @@ export class OrdersPage implements OnInit {
       .list({
         page,
         pageSize: OrdersPage.LOOKUP_PAGE_SIZE,
-        search
+        search,
       })
       .pipe(
         timeout(20000),
         finalize(() => {
           this.customerLookupLoading.set(false);
           this.customerLookupLoadingMore.set(false);
-        })
+        }),
       )
       .subscribe({
         next: (result) => {
           this.customerLookupPage = result.page;
           this.customerLookupOptions.set(
             append
-              ? [...this.customerLookupOptions(), ...result.items.map((customer) => toCustomerLookupOption(customer))]
-              : result.items.map((customer) => toCustomerLookupOption(customer))
+              ? [
+                  ...this.customerLookupOptions(),
+                  ...result.items.map((customer) => toCustomerLookupOption(customer)),
+                ]
+              : result.items.map((customer) => toCustomerLookupOption(customer)),
           );
           this.customerLookupHasMore.set(result.page < result.totalPages);
         },
         error: () => {
           this.customerLookupHasMore.set(false);
           this.toastService.error('Không thể tải danh sách khách hàng. Vui lòng thử lại.');
-        }
+        },
       });
   }
 
@@ -2264,29 +2560,32 @@ export class OrdersPage implements OnInit {
       .list({
         page,
         pageSize: OrdersPage.LOOKUP_PAGE_SIZE,
-        search
+        search,
       })
       .pipe(
         timeout(20000),
         finalize(() => {
           this.productLookupLoading.set(false);
           this.productLookupLoadingMore.set(false);
-        })
+        }),
       )
       .subscribe({
         next: (result) => {
           this.productLookupPage = result.page;
           this.productLookupOptions.set(
             append
-              ? [...this.productLookupOptions(), ...result.items.map((product) => toProductLookupOption(product))]
-              : result.items.map((product) => toProductLookupOption(product))
+              ? [
+                  ...this.productLookupOptions(),
+                  ...result.items.map((product) => toProductLookupOption(product)),
+                ]
+              : result.items.map((product) => toProductLookupOption(product)),
           );
           this.productLookupHasMore.set(result.page < result.totalPages);
         },
         error: () => {
           this.productLookupHasMore.set(false);
           this.toastService.error('Không thể tải danh sách sản phẩm. Vui lòng thử lại.');
-        }
+        },
       });
   }
 
