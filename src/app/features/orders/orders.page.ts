@@ -186,9 +186,15 @@ import { SearchSelectComponent, SearchSelectOption } from '../../shared/search-s
                   />
                 </td>
                 <td data-label="Thanh toán">
-                  <span [ngClass]="'payment-badge payment-' + order.paymentStatus.toLowerCase()">
-                    {{ paymentStatusLabels[order.paymentStatus] }}
-                  </span>
+                  <app-search-select
+                    [selectedLabel]="paymentStatusLabels[order.paymentStatus]"
+                    [options]="rowPaymentStatusSelectOptions(order)"
+                    [disabled]="isRowPaymentStatusReadonly(order)"
+                    placeholder="Chọn trạng thái thanh toán"
+                    searchPlaceholder="Tìm trạng thái thanh toán"
+                    emptyText="Không có trạng thái thanh toán"
+                    (optionSelected)="requestPaymentStatusOptionChange(order, $event)"
+                  />
                 </td>
                 <td data-label="Thao tác" class="actions actions-cell">
                   <button type="button" class="btn-view" (click)="openViewModal(order.id)">
@@ -428,7 +434,7 @@ import { SearchSelectComponent, SearchSelectOption } from '../../shared/search-s
                       type="text"
                       inputmode="numeric"
                       formControlName="sellingPrice"
-                      placeholder="0"
+                      placeholder="Nhập giá bán"
                       (input)="onPriceInput($event, 'sellingPrice')"
                       (blur)="savePriceValue($event, 'sellingPrice')"
                     />
@@ -442,7 +448,7 @@ import { SearchSelectComponent, SearchSelectOption } from '../../shared/search-s
                       type="text"
                       inputmode="numeric"
                       formControlName="yuanPrice"
-                      placeholder="0"
+                      placeholder="Nhập giá tệ"
                       (input)="onPriceInputFloat($event, 'yuanPrice')"
                       (blur)="savePriceValue($event, 'yuanPrice')"
                     />
@@ -456,7 +462,7 @@ import { SearchSelectComponent, SearchSelectOption } from '../../shared/search-s
                       type="text"
                       inputmode="numeric"
                       formControlName="importPrice"
-                      placeholder="0"
+                      placeholder="Nhập giá nhập"
                       (input)="onPriceInput($event, 'importPrice')"
                       (blur)="savePriceValue($event, 'importPrice')"
                     />
@@ -470,7 +476,7 @@ import { SearchSelectComponent, SearchSelectOption } from '../../shared/search-s
                       type="text"
                       inputmode="numeric"
                       formControlName="amountSellingPrice"
-                      placeholder="0"
+                      placeholder="Nhập tổng tiền"
                       (input)="onPriceInput($event, 'amountSellingPrice')"
                       (blur)="savePriceValue($event, 'amountSellingPrice')"
                     />
@@ -738,6 +744,15 @@ import { SearchSelectComponent, SearchSelectOption } from '../../shared/search-s
       [message]="statusConfirmMessage()"
       (cancel)="cancelStatusChange()"
       (confirm)="confirmStatusChange()"
+    />
+
+    <app-confirm-modal
+      [open]="showPaymentStatusConfirm()"
+      [loading]="paymentStatusSaving()"
+      title="Xác nhận cập nhật trạng thái thanh toán"
+      [message]="paymentStatusConfirmMessage()"
+      (cancel)="cancelPaymentStatusChange()"
+      (confirm)="confirmPaymentStatusChange()"
     />
   `,
   styles: `
@@ -1622,6 +1637,7 @@ export class OrdersPage implements OnInit {
   readonly showSaveConfirm = signal(false);
   readonly showDeleteModal = signal(false);
   readonly showStatusConfirm = signal(false);
+  readonly showPaymentStatusConfirm = signal(false);
   readonly showViewModal = signal(false);
   readonly viewModalClosing = signal(false);
   readonly editingOrderId = signal<number | null>(null);
@@ -1630,6 +1646,7 @@ export class OrdersPage implements OnInit {
   readonly saving = signal(false);
   readonly deleting = signal(false);
   readonly statusSaving = signal(false);
+  readonly paymentStatusSaving = signal(false);
   readonly loading = signal(false);
   readonly loadingEdit = signal(false);
   readonly formError = signal('');
@@ -1646,6 +1663,9 @@ export class OrdersPage implements OnInit {
   private pendingStatusOrderId: number | null = null;
   private pendingStatusOrderCode: string | null = null;
   private pendingStatusValue: OrderStatus | null = null;
+  private pendingPaymentStatusOrderId: number | null = null;
+  private pendingPaymentStatusOrderCode: string | null = null;
+  private pendingPaymentStatusValue: PaymentStatus | null = null;
   private currencyRate = 1;
   private customerLookupPage = 0;
   private customerLookupSearch = '';
@@ -1667,12 +1687,15 @@ export class OrdersPage implements OnInit {
     productName: ['', [Validators.required]],
     specification: [''],
     quantity: [1, [Validators.required, Validators.min(1)]],
-    sellingPrice: [0, [Validators.required, Validators.min(0)]],
-    amountSellingPrice: [0, [Validators.required, Validators.min(0)]],
+    sellingPrice: this.fb.control<number | null>(null, [Validators.required, Validators.min(0)]),
+    amountSellingPrice: this.fb.control<number | null>(null, [
+      Validators.required,
+      Validators.min(0),
+    ]),
     status: ['NEW' as OrderStatus, [Validators.required]],
     paymentStatus: ['UNPAID' as PaymentStatus, [Validators.required]],
-    yuanPrice: [0],
-    importPrice: [0],
+    yuanPrice: this.fb.control<number | null>(null),
+    importPrice: this.fb.control<number | null>(null),
     supplier: [''],
     warehousePayment: [0],
     shippingWeightFee: [0],
@@ -1804,12 +1827,12 @@ export class OrdersPage implements OnInit {
       productName: '',
       specification: '',
       quantity: 1,
-      sellingPrice: 0,
-      amountSellingPrice: 0,
+      sellingPrice: null,
+      amountSellingPrice: null,
       status: 'NEW',
       paymentStatus: 'UNPAID',
-      yuanPrice: 0,
-      importPrice: 0,
+      yuanPrice: null,
+      importPrice: null,
       supplier: this.supplierOptions[0],
       warehousePayment: 0,
       shippingWeightFee: 0,
@@ -1961,6 +1984,9 @@ export class OrdersPage implements OnInit {
     const payload: OrderUpsertRequest = {
       ...raw,
       orderCode,
+      sellingPrice: Number(raw.sellingPrice ?? 0),
+      yuanPrice: Number(raw.yuanPrice ?? 0),
+      importPrice: Number(raw.importPrice ?? 0),
       shippingPaymentDate: raw.shippingPaymentDate || null,
     };
 
@@ -2077,6 +2103,68 @@ export class OrdersPage implements OnInit {
     }
 
     return `Bạn có chắc chắn muốn cập nhật đơn ${this.pendingStatusOrderCode} sang trạng thái "${this.orderStatusLabels[this.pendingStatusValue]}"?`;
+  }
+
+  requestPaymentStatusChange(order: Order, nextStatus: PaymentStatus): void {
+    if (
+      !this.paymentStatuses.includes(nextStatus) ||
+      nextStatus === order.paymentStatus ||
+      this.paymentStatusSaving()
+    ) {
+      return;
+    }
+
+    this.pendingPaymentStatusOrderId = order.id;
+    this.pendingPaymentStatusOrderCode = order.orderCode;
+    this.pendingPaymentStatusValue = nextStatus;
+    this.showPaymentStatusConfirm.set(true);
+  }
+
+  cancelPaymentStatusChange(): void {
+    this.showPaymentStatusConfirm.set(false);
+    this.pendingPaymentStatusOrderId = null;
+    this.pendingPaymentStatusOrderCode = null;
+    this.pendingPaymentStatusValue = null;
+  }
+
+  confirmPaymentStatusChange(): void {
+    const targetId = this.pendingPaymentStatusOrderId;
+    const nextStatus = this.pendingPaymentStatusValue;
+    if (targetId === null || !nextStatus || this.paymentStatusSaving()) {
+      this.cancelPaymentStatusChange();
+      return;
+    }
+
+    this.showPaymentStatusConfirm.set(false);
+    this.paymentStatusSaving.set(true);
+
+    this.ordersService
+      .updatePaymentStatus(targetId, nextStatus)
+      .pipe(
+        timeout(20000),
+        finalize(() => this.paymentStatusSaving.set(false)),
+      )
+      .subscribe({
+        next: () => {
+          this.toastService.success('Cập nhật trạng thái thanh toán thành công.');
+          this.cancelPaymentStatusChange();
+          this.fetch(this.pageData().page);
+        },
+        error: () => {
+          this.cancelPaymentStatusChange();
+          this.toastService.error(
+            'Không thể cập nhật trạng thái thanh toán. Vui lòng thử lại.',
+          );
+        },
+      });
+  }
+
+  paymentStatusConfirmMessage(): string {
+    if (!this.pendingPaymentStatusOrderCode || !this.pendingPaymentStatusValue) {
+      return 'Bạn có chắc chắn muốn cập nhật trạng thái thanh toán?';
+    }
+
+    return `Bạn có chắc chắn muốn cập nhật thanh toán đơn ${this.pendingPaymentStatusOrderCode} sang "${this.paymentStatusLabels[this.pendingPaymentStatusValue]}"?`;
   }
 
   onCustomerTyped(value: string): void {
@@ -2206,7 +2294,23 @@ export class OrdersPage implements OnInit {
       rawValue = parts[0] + '.' + parts.slice(1).join('');
     }
 
-    const numValue = parseFloat(rawValue) || 0;
+    if (!rawValue) {
+      this.orderForm.get(fieldName)?.setValue(null);
+      input.value = '';
+
+      if (fieldName === 'yuanPrice') {
+        this.orderForm.controls.importPrice.setValue(null);
+        this.clearPriceInputDisplay('importPrice');
+      }
+
+      if (fieldName === 'sellingPrice') {
+        this.orderForm.controls.amountSellingPrice.setValue(null);
+        this.clearPriceInputDisplay('amountSellingPrice');
+      }
+      return;
+    }
+
+    const numValue = parseFloat(rawValue);
 
     this.orderForm.get(fieldName)?.setValue(numValue);
 
@@ -2225,6 +2329,15 @@ export class OrdersPage implements OnInit {
   private formatNumberDisplay(value: string): string {
     if (!value) return '';
     return value.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+
+  private clearPriceInputDisplay(fieldName: string): void {
+    const input = document.querySelector(
+      `input[formControlName="${fieldName}"]`,
+    ) as HTMLInputElement | null;
+    if (input) {
+      input.value = '';
+    }
   }
 
   private formatPriceInputsDisplay(): void {
@@ -2392,6 +2505,29 @@ export class OrdersPage implements OnInit {
       return;
     }
     this.requestStatusChange(order, status);
+  }
+
+  rowPaymentStatusSelectOptions(order: Order): SearchSelectOption[] {
+    const statuses = [
+      order.paymentStatus,
+      ...this.paymentStatuses.filter((status) => status !== order.paymentStatus),
+    ];
+    return statuses.map((status, index) => ({
+      id: index + 1,
+      label: this.paymentStatusLabels[status],
+      raw: status,
+    }));
+  }
+
+  requestPaymentStatusOptionChange(order: Order, option: SearchSelectOption): void {
+    const paymentStatus = option.raw as PaymentStatus | undefined;
+    if (paymentStatus) {
+      this.requestPaymentStatusChange(order, paymentStatus);
+    }
+  }
+
+  isRowPaymentStatusReadonly(order: Order): boolean {
+    return this.paymentStatusSaving() || order.status === 'DELETED';
   }
 
   isRowStatusReadonly(order: Order): boolean {
@@ -2799,4 +2935,3 @@ function normalizeSupplier(value: string | undefined, supplierOptions: readonly 
 
   return normalized;
 }
-

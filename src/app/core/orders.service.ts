@@ -73,6 +73,12 @@ export class OrdersService {
       .pipe(map((payload) => normalizeOrder(unwrapApiResponse<Order>(payload as Order))));
   }
 
+  updatePaymentStatus(id: number, paymentStatus: PaymentStatus) {
+    return this.http
+      .patch(`${this.apiBase}/api/orders/${id}/payment-status`, { paymentStatus })
+      .pipe(map((payload) => normalizeOrder(unwrapApiResponse<Order>(payload as Order))));
+  }
+
   softDelete(id: number) {
     return this.http
       .delete(`${this.apiBase}/api/orders/${id}`)
