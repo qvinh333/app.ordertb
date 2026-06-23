@@ -139,6 +139,14 @@ import { SearchSelectComponent, SearchSelectOption } from '../../shared/search-s
           emptyText="Không có trạng thái thanh toán"
           (optionSelected)="selectFilterPaymentStatus($event)"
         />
+        <app-search-select
+          [selectedLabel]="selectedFilterSupplierLabel()"
+          [options]="filterSupplierSelectOptions()"
+          placeholder="Tất cả nguồn hàng"
+          searchPlaceholder="Tìm nguồn hàng"
+          emptyText="Không có nguồn hàng"
+          (optionSelected)="selectFilterSupplier($event)"
+        />
         <app-date-picker formControlName="fromDate" placeholder="Từ ngày" />
         <app-date-picker formControlName="toDate" placeholder="Đến ngày" />
         <button type="submit">
@@ -164,7 +172,7 @@ import { SearchSelectComponent, SearchSelectOption } from '../../shared/search-s
           <thead>
             <tr>
               <th>STT</th>
-              <th>Mã đơn</th>
+              <th>Nguồn hàng</th>
               <th>Khách hàng</th>
               <th>Sản phẩm</th>
               <th>Ngày tạo</th>
@@ -181,7 +189,7 @@ import { SearchSelectComponent, SearchSelectOption } from '../../shared/search-s
                 <td data-label="STT">
                   {{ (pageData().page - 1) * pageData().pageSize + rowIndex + 1 }}
                 </td>
-                <td data-label="Mã đơn">{{ order.orderCode }}</td>
+                <td data-label="Nguồn hàng">{{ order.supplier || '-' }}</td>
                 <td data-label="Khách hàng">{{ order.customerName }}</td>
                 <td data-label="Sản phẩm">{{ order.productName }}</td>
                 <td data-label="Ngày tạo">{{ order.orderDate | date: 'yyyy-MM-dd' }}</td>
@@ -877,7 +885,7 @@ import { SearchSelectComponent, SearchSelectOption } from '../../shared/search-s
 
     .filters {
       display: grid;
-      grid-template-columns: repeat(7, minmax(0, 1fr));
+      grid-template-columns: repeat(8, minmax(0, 1fr));
       gap: 0.55rem;
       margin-bottom: 1rem;
     }
@@ -1737,6 +1745,7 @@ export class OrdersPage implements OnInit {
   readonly form = this.fb.nonNullable.group({
     customerName: [''],
     productName: [''],
+    supplier: [''],
     status: [''],
     paymentStatus: [''],
     fromDate: [firstDayOfYear()],
@@ -1840,6 +1849,25 @@ export class OrdersPage implements OnInit {
 
   selectFilterPaymentStatus(option: SearchSelectOption): void {
     this.form.patchValue({ paymentStatus: (option.raw as PaymentStatus | '') ?? '' });
+  }
+
+  selectedFilterSupplierLabel(): string {
+    return this.form.controls.supplier.value || 'Tất cả nguồn hàng';
+  }
+
+  filterSupplierSelectOptions(): SearchSelectOption[] {
+    return [
+      { id: 0, label: 'Tất cả nguồn hàng', raw: '' },
+      ...this.supplierOptions.map((supplier, index) => ({
+        id: index + 1,
+        label: supplier,
+        raw: supplier,
+      })),
+    ];
+  }
+
+  selectFilterSupplier(option: SearchSelectOption): void {
+    this.form.patchValue({ supplier: String(option.raw ?? option.label) });
   }
 
   pageSizeSelectOptions(): SearchSelectOption[] {
@@ -2832,6 +2860,7 @@ export class OrdersPage implements OnInit {
       pageSize: this.pageData().pageSize,
       customerName: filters.customerName,
       productName: filters.productName,
+      supplier: filters.supplier,
       status: filters.status as OrderStatus | '',
       paymentStatus: filters.paymentStatus as PaymentStatus | '',
       fromDate: filters.fromDate,

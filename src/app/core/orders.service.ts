@@ -10,6 +10,7 @@ export interface OrderQuery {
   pageSize?: number;
   customerName?: string;
   productName?: string;
+  supplier?: string;
   status?: OrderStatus | '';
   paymentStatus?: PaymentStatus | '';
   fromDate?: string;
