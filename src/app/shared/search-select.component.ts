@@ -57,16 +57,18 @@ export interface SearchSelectOption {
 
       @if (open()) {
         <div class="panel" [ngStyle]="panelStyle()" (keydown.escape)="close()">
-          <div class="panel-search">
-            <input
-              #searchInput
-              type="text"
-              [value]="searchTerm()"
-              [placeholder]="searchPlaceholder"
-              (input)="onSearchInput($any($event.target).value)"
-              (keydown.enter)="useTypedValue($event)"
-            />
-          </div>
+          @if (showSearch) {
+            <div class="panel-search">
+              <input
+                #searchInput
+                type="text"
+                [value]="searchTerm()"
+                [placeholder]="searchPlaceholder"
+                (input)="onSearchInput($any($event.target).value)"
+                (keydown.enter)="useTypedValue($event)"
+              />
+            </div>
+          }
 
           <div class="options" (scroll)="onOptionsScroll($event)">
             @if (loading() && !options.length) {
@@ -370,6 +372,8 @@ export class SearchSelectComponent implements OnDestroy {
   @Input() loadingMore = signal(false);
   @Input() hasMore = signal(false);
   @Input() allowClear = false;
+  @Input() showSearch = true;
+  @Input() panelWidth = 360;
   @Output() cleared = new EventEmitter<void>();
 
   @Output() opened = new EventEmitter<void>();
@@ -434,10 +438,12 @@ export class SearchSelectComponent implements OnDestroy {
     this.searchChange.emit('');
     setTimeout(() => {
       this.updatePanelPosition();
-      const searchInput = this.elementRef.nativeElement.querySelector(
-        '.panel-search input',
-      ) as HTMLInputElement | null;
-      searchInput?.focus();
+      if (this.showSearch) {
+        const searchInput = this.elementRef.nativeElement.querySelector(
+          '.panel-search input',
+        ) as HTMLInputElement | null;
+        searchInput?.focus();
+      }
     }, 0);
   }
 
@@ -519,8 +525,9 @@ export class SearchSelectComponent implements OnDestroy {
     }
 
     const rect = trigger.getBoundingClientRect();
-    const panelWidth = Math.min(360, window.innerWidth - 16);
-    const panelHeight = 320;
+    const panel = this.elementRef.nativeElement.querySelector('.panel') as HTMLElement | null;
+    const panelWidth = Math.min(Math.max(rect.width, this.panelWidth), window.innerWidth - 16);
+    const panelHeight = panel?.offsetHeight || 320;
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
     const left = Math.max(8, Math.min(rect.left, viewportWidth - panelWidth - 8));
@@ -545,4 +552,3 @@ export class SearchSelectComponent implements OnDestroy {
     this.cleared.emit();
   }
 }
-

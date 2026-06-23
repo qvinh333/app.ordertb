@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { map } from 'rxjs';
 import { API_BASE_URL } from './constants';
 import { normalizePagedResult, unwrapApiResponse } from './helpers';
-import { Order, OrderStatus, OrderUpsertRequest, PaymentStatus } from './models';
+import { Order, OrderMoneySummary, OrderStatus, OrderUpsertRequest, PaymentStatus } from './models';
 
 export interface OrderQuery {
   page?: number;
@@ -11,6 +11,7 @@ export interface OrderQuery {
   customerName?: string;
   productName?: string;
   status?: OrderStatus | '';
+  paymentStatus?: PaymentStatus | '';
   fromDate?: string;
   toDate?: string;
   sort?: 'asc' | 'desc';
@@ -23,22 +24,7 @@ export class OrdersService {
   constructor(private readonly http: HttpClient) {}
 
   list(query: OrderQuery) {
-    let params = new HttpParams();
-
-    Object.entries(query).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== '') {
-        params = params.set(key, String(value));
-      }
-    });
-
-    if (query.page !== undefined) {
-      params = params.set('pageNumber', String(query.page));
-    }
-
-    if (query.pageSize !== undefined) {
-      params = params.set('size', String(query.pageSize));
-      params = params.set('limit', String(query.pageSize));
-    }
+    const params = toOrderParams(query);
 
     return this.http.get(`${this.apiBase}/api/orders`, { params }).pipe(
       map((payload) => normalizePagedResult<Order>(payload)),
@@ -47,6 +33,12 @@ export class OrdersService {
         items: result.items.map((item) => normalizeOrder(item))
       }))
     );
+  }
+
+  moneySummary(query: OrderQuery) {
+    return this.http
+      .get(`${this.apiBase}/api/orders/money-summary`, { params: toOrderParams(query) })
+      .pipe(map((payload) => normalizeMoneySummary(payload)));
   }
 
   detail(id: number) {
@@ -84,6 +76,61 @@ export class OrdersService {
       .delete(`${this.apiBase}/api/orders/${id}`)
       .pipe(map((payload) => unwrapApiResponse<unknown>(payload as unknown)), map(() => void 0));
   }
+}
+
+function toOrderParams(query: OrderQuery): HttpParams {
+  let params = new HttpParams();
+
+  Object.entries(query).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      params = params.set(key, String(value));
+    }
+  });
+
+  if (query.page !== undefined) {
+    params = params.set('pageNumber', String(query.page));
+  }
+
+  if (query.pageSize !== undefined) {
+    params = params.set('size', String(query.pageSize));
+    params = params.set('limit', String(query.pageSize));
+  }
+
+  return params;
+}
+
+function normalizeMoneySummary(payload: unknown): OrderMoneySummary {
+  const data = unwrapApiResponse(payload as OrderMoneySummary | number);
+  if (typeof data === 'number' && Number.isFinite(data)) {
+    return { totalMoney: data };
+  }
+
+  const source = asRecord(data);
+  return {
+    totalMoney:
+      toFiniteNumber(
+        pickFirst(source, [
+          'totalMoney',
+          'total_money',
+          'totalAmount',
+          'total_amount',
+          'totalAmountSellingPrice',
+          'total_amount_selling_price',
+          'amountSellingPrice',
+          'amount_selling_price',
+          'amountSellingPriceSum',
+          'amount_selling_price_sum',
+          'totalSellingPrice',
+          'total_selling_price',
+          'totalRevenue',
+          'total_revenue',
+          'revenue',
+          'money',
+          'total',
+          'sum',
+        ]),
+      ) ?? 0,
+  };
 }
 
 const ORDER_STATUS_VALUES: readonly OrderStatus[] = [

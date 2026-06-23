@@ -100,6 +100,10 @@ export interface OrderUpsertRequest {
   note?: string;
 }
 
+export interface OrderMoneySummary {
+  totalMoney: number;
+}
+
 export interface Product {
   id: number;
   productCode: string;

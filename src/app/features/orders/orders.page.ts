@@ -14,6 +14,7 @@ import {
   Customer,
   CustomerUpsertRequest,
   Order,
+  OrderMoneySummary,
   OrderStatus,
   OrderUpsertRequest,
   PagedResult,
@@ -43,7 +44,13 @@ import { SearchSelectComponent, SearchSelectOption } from '../../shared/search-s
   template: `
     <section class="card">
       <div class="header">
-        <h2>Đơn hàng</h2>
+        <div class="header-title">
+          <h2>Đơn hàng</h2>
+          <div class="money-summary" [class.loading]="moneySummaryLoading()">
+            <span class="money-summary-label">Tổng tiền</span>
+            <strong>{{ moneySummaryTotal() | number: '1.0-0' }} VNĐ</strong>
+          </div>
+        </div>
         <button type="button" class="btn-primary" (click)="openCreateModal()">
           <span class="btn-content">
             <svg
@@ -123,6 +130,14 @@ import { SearchSelectComponent, SearchSelectOption } from '../../shared/search-s
           searchPlaceholder="Tìm trạng thái"
           emptyText="Không có trạng thái"
           (optionSelected)="selectFilterStatus($event)"
+        />
+        <app-search-select
+          [selectedLabel]="selectedFilterPaymentStatusLabel()"
+          [options]="filterPaymentStatusSelectOptions()"
+          placeholder="Tất cả thanh toán"
+          searchPlaceholder="Tìm trạng thái thanh toán"
+          emptyText="Không có trạng thái thanh toán"
+          (optionSelected)="selectFilterPaymentStatus($event)"
         />
         <app-date-picker formControlName="fromDate" placeholder="Từ ngày" />
         <app-date-picker formControlName="toDate" placeholder="Đến ngày" />
@@ -268,6 +283,8 @@ import { SearchSelectComponent, SearchSelectOption } from '../../shared/search-s
             <app-search-select
               [selectedLabel]="pageData().pageSize.toString()"
               [options]="pageSizeSelectOptions()"
+              [showSearch]="false"
+              [panelWidth]="96"
               placeholder="10"
               searchPlaceholder="Tìm kích thước trang"
               emptyText="Không có kích thước trang"
@@ -796,6 +813,14 @@ import { SearchSelectComponent, SearchSelectOption } from '../../shared/search-s
       margin-bottom: 1rem;
     }
 
+    .header-title {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      min-width: 0;
+      flex-wrap: wrap;
+    }
+
     .header .btn-content {
       font-size: 0.9rem;
     }
@@ -804,6 +829,35 @@ import { SearchSelectComponent, SearchSelectOption } from '../../shared/search-s
       margin: 0;
       font-size: 1.08rem;
       font-weight: 700;
+    }
+
+    .money-summary {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 0.42rem;
+      padding: 0.34rem 0.62rem;
+      border: 1px solid #d7e7fa;
+      border-radius: 999px;
+      background: linear-gradient(180deg, #ffffff, #f5f9ff);
+      color: #243b5a;
+      white-space: nowrap;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85);
+    }
+
+    .money-summary.loading {
+      opacity: 0.72;
+    }
+
+    .money-summary-label {
+      color: #627592;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+
+    .money-summary strong {
+      color: #0f5fa8;
+      font-size: 0.92rem;
+      font-weight: 800;
     }
 
     .btn-primary {
@@ -823,9 +877,15 @@ import { SearchSelectComponent, SearchSelectOption } from '../../shared/search-s
 
     .filters {
       display: grid;
-      grid-template-columns: repeat(6, minmax(0, 1fr));
+      grid-template-columns: repeat(7, minmax(0, 1fr));
       gap: 0.55rem;
       margin-bottom: 1rem;
+    }
+
+    .filters app-search-select,
+    .filters app-date-picker,
+    .filters button[type='submit'] {
+      min-width: 0;
     }
 
     input,
@@ -864,6 +924,7 @@ import { SearchSelectComponent, SearchSelectOption } from '../../shared/search-s
       font-weight: 600;
       color: var(--text);
       cursor: pointer;
+      white-space: nowrap;
     }
 
     form button[type='submit']:hover {
@@ -1381,7 +1442,7 @@ import { SearchSelectComponent, SearchSelectOption } from '../../shared/search-s
       }
     }
 
-    @media (max-width: 1200px) {
+    @media (max-width: 900px) {
       .filters {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
@@ -1648,6 +1709,7 @@ export class OrdersPage implements OnInit {
   readonly statusSaving = signal(false);
   readonly paymentStatusSaving = signal(false);
   readonly loading = signal(false);
+  readonly moneySummaryLoading = signal(false);
   readonly loadingEdit = signal(false);
   readonly formError = signal('');
   readonly customerLookupOptions = signal<SearchSelectOption[]>([]);
@@ -1676,6 +1738,7 @@ export class OrdersPage implements OnInit {
     customerName: [''],
     productName: [''],
     status: [''],
+    paymentStatus: [''],
     fromDate: [firstDayOfYear()],
     toDate: [today()],
   });
@@ -1712,14 +1775,15 @@ export class OrdersPage implements OnInit {
     totalItems: 0,
     totalPages: 1,
   });
+  readonly moneySummary = signal<OrderMoneySummary | null>(null);
 
   ngOnInit(): void {
     this.loadLatestCurrencyRate();
-    this.fetch(1);
+    this.fetch(1, true);
   }
 
   onSearch(): void {
-    this.fetch(1);
+    this.fetch(1, true);
   }
 
   goToPage(page: number): void {
@@ -1756,6 +1820,26 @@ export class OrdersPage implements OnInit {
 
   selectFilterStatus(option: SearchSelectOption): void {
     this.form.patchValue({ status: (option.raw as OrderStatus | '') ?? '' });
+  }
+
+  selectedFilterPaymentStatusLabel(): string {
+    const paymentStatus = this.form.controls.paymentStatus.value as PaymentStatus | '';
+    return paymentStatus ? this.paymentStatusLabels[paymentStatus] : 'Tất cả thanh toán';
+  }
+
+  filterPaymentStatusSelectOptions(): SearchSelectOption[] {
+    return [
+      { id: 0, label: 'Tất cả thanh toán', raw: '' },
+      ...this.paymentStatuses.map((status, index) => ({
+        id: index + 1,
+        label: this.paymentStatusLabels[status],
+        raw: status,
+      })),
+    ];
+  }
+
+  selectFilterPaymentStatus(option: SearchSelectOption): void {
+    this.form.patchValue({ paymentStatus: (option.raw as PaymentStatus | '') ?? '' });
   }
 
   pageSizeSelectOptions(): SearchSelectOption[] {
@@ -2021,7 +2105,7 @@ export class OrdersPage implements OnInit {
             editingId !== null ? 'Cập nhật đơn hàng thành công.' : 'Tạo đơn hàng thành công.',
           );
           this.closeFormModal();
-          this.fetch(this.pageData().page);
+          this.fetch(this.pageData().page, true);
         },
         error: (error) => {
           this.formError.set(resolveOrderSaveError(error));
@@ -2088,7 +2172,7 @@ export class OrdersPage implements OnInit {
         next: () => {
           this.toastService.success('Cập nhật trạng thái đơn hàng thành công.');
           this.cancelStatusChange();
-          this.fetch(this.pageData().page);
+          this.fetch(this.pageData().page, true);
         },
         error: () => {
           this.cancelStatusChange();
@@ -2148,7 +2232,7 @@ export class OrdersPage implements OnInit {
         next: () => {
           this.toastService.success('Cập nhật trạng thái thanh toán thành công.');
           this.cancelPaymentStatusChange();
-          this.fetch(this.pageData().page);
+          this.fetch(this.pageData().page, true);
         },
         error: () => {
           this.cancelPaymentStatusChange();
@@ -2585,7 +2669,7 @@ export class OrdersPage implements OnInit {
       .subscribe({
         next: () => {
           this.toastService.success('Đã xóa đơn hàng.');
-          this.fetch(this.pageData().page);
+          this.fetch(this.pageData().page, true);
         },
         error: () => {
           this.toastService.error('Không thể xóa đơn hàng. Vui lòng thử lại.');
@@ -2602,6 +2686,10 @@ export class OrdersPage implements OnInit {
     const from = (data.page - 1) * data.pageSize + 1;
     const to = Math.min(data.page * data.pageSize, data.totalItems);
     return `${from}-${to} / ${data.totalItems}`;
+  }
+
+  moneySummaryTotal(): number {
+    return this.moneySummary()?.totalMoney ?? 0;
   }
 
   private generateCustomerCode(): string {
@@ -2737,21 +2825,23 @@ export class OrdersPage implements OnInit {
     });
   }
 
-  private fetch(page: number): void {
+  private fetch(page: number, refreshMoneySummary = false): void {
     const filters = this.form.getRawValue();
+    const query = {
+      page,
+      pageSize: this.pageData().pageSize,
+      customerName: filters.customerName,
+      productName: filters.productName,
+      status: filters.status as OrderStatus | '',
+      paymentStatus: filters.paymentStatus as PaymentStatus | '',
+      fromDate: filters.fromDate,
+      toDate: filters.toDate,
+      sort: 'desc' as const,
+    };
     this.loading.set(true);
 
     this.ordersService
-      .list({
-        page,
-        pageSize: this.pageData().pageSize,
-        customerName: filters.customerName,
-        productName: filters.productName,
-        status: filters.status as OrderStatus | '',
-        fromDate: filters.fromDate,
-        toDate: filters.toDate,
-        sort: 'desc',
-      })
+      .list(query)
       .pipe(
         timeout(20000),
         finalize(() => this.loading.set(false)),
@@ -2761,6 +2851,27 @@ export class OrdersPage implements OnInit {
         error: () => {
           // Keep current data and avoid uncaught errors that can lock interaction flows.
           this.toastService.error('Không thể tải danh sách đơn hàng. Vui lòng thử lại.');
+        },
+      });
+
+    if (refreshMoneySummary) {
+      this.fetchMoneySummary(query);
+    }
+  }
+
+  private fetchMoneySummary(query: Parameters<OrdersService['moneySummary']>[0]): void {
+    this.moneySummaryLoading.set(true);
+    this.ordersService
+      .moneySummary(query)
+      .pipe(
+        timeout(20000),
+        finalize(() => this.moneySummaryLoading.set(false)),
+      )
+      .subscribe({
+        next: (summary) => this.moneySummary.set(summary),
+        error: () => {
+          this.moneySummary.set({ totalMoney: 0 });
+          this.toastService.error('Không thể tải tổng tiền đơn hàng. Vui lòng thử lại.');
         },
       });
   }
