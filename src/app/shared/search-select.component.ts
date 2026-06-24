@@ -75,7 +75,7 @@ export interface SearchSelectOption {
               <div class="state">Đang tải dữ liệu...</div>
             } @else {
               @for (option of options; track option.id) {
-                <button type="button" class="option" (click)="selectOption(option)">
+                <button type="button" class="option" (click)="selectOption(option, $event)">
                   <span class="option-label">{{ option.label }}</span>
                   @if (option.description) {
                     <span class="option-description">{{ option.description }}</span>
@@ -97,7 +97,7 @@ export interface SearchSelectOption {
 
           @if (allowCustomValue && hasTypedValue()) {
             <div class="custom-action-wrap">
-              <button type="button" class="custom-action" (click)="useTypedValue()">
+              <button type="button" class="custom-action" (click)="useTypedValue($event)">
                 {{ customActionText }}: "{{ typedValue() }}"
               </button>
             </div>
@@ -482,13 +482,19 @@ export class SearchSelectComponent implements OnDestroy {
     }
   }
 
-  selectOption(option: SearchSelectOption): void {
+  selectOption(option: SearchSelectOption, event?: Event): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+
+    this.clearPendingSearch();
     this.optionSelected.emit(option);
     this.close(false);
   }
 
   useTypedValue(event?: Event): void {
     event?.preventDefault();
+    event?.stopPropagation();
+
     this.emitTypedValue();
     this.close(false);
   }
@@ -512,6 +518,15 @@ export class SearchSelectComponent implements OnDestroy {
     }
 
     this.customValueSelected.emit(value);
+  }
+
+  private clearPendingSearch(): void {
+    if (this.searchDebounce) {
+      clearTimeout(this.searchDebounce);
+      this.searchDebounce = null;
+    }
+
+    this.searchTerm.set('');
   }
 
   private updatePanelPosition(): void {

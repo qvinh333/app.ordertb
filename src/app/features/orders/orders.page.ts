@@ -1739,8 +1739,12 @@ export class OrdersPage implements OnInit {
   private currencyRate = 1;
   private customerLookupPage = 0;
   private customerLookupSearch = '';
+  private selectedCustomerSearchValue = '';
+  private selectedCustomerSearchTypedValue = '';
   private productLookupPage = 0;
   private productLookupSearch = '';
+  private selectedProductSearchValue = '';
+  private selectedProductSearchTypedValue = '';
 
   readonly form = this.fb.nonNullable.group({
     customerName: [''],
@@ -2327,6 +2331,12 @@ export class OrdersPage implements OnInit {
       return;
     }
 
+    if (this.isStaleSelectedProductSearchValue(productName)) {
+      return;
+    }
+
+    this.selectedProductSearchValue = '';
+    this.selectedProductSearchTypedValue = '';
     this.form.patchValue({ productName });
     this.tryApplyMatchedProductSearch(productName);
   }
@@ -2334,6 +2344,8 @@ export class OrdersPage implements OnInit {
   selectCustomerSearch(option: SearchSelectOption): void {
     const customer = option.raw as Customer | undefined;
     const customerName = customer?.fullName?.trim() || option.label;
+    this.selectedCustomerSearchValue = customerName;
+    this.selectedCustomerSearchTypedValue = this.customerLookupSearch.trim();
     this.form.patchValue({ customerName });
   }
 
@@ -2343,26 +2355,59 @@ export class OrdersPage implements OnInit {
       return;
     }
 
+    if (this.isStaleSelectedCustomerSearchValue(customerName)) {
+      return;
+    }
+
+    this.selectedCustomerSearchValue = '';
+    this.selectedCustomerSearchTypedValue = '';
     this.form.patchValue({ customerName });
   }
 
   selectProductSearch(option: SearchSelectOption): void {
     const product = option.raw as Product | undefined;
+    const productName = product?.name?.trim() || option.label;
+    this.selectedProductSearchValue = productName;
+    this.selectedProductSearchTypedValue = this.productLookupSearch.trim();
     this.form.patchValue({
-      productName: product?.name?.trim() || option.label,
+      productName,
     });
   }
 
   clearProductSearch(): void {
+    this.selectedProductSearchValue = '';
+    this.selectedProductSearchTypedValue = '';
     this.form.patchValue({
       productName: '',
     });
   }
 
   clearCustomerSearch(): void {
+    this.selectedCustomerSearchValue = '';
+    this.selectedCustomerSearchTypedValue = '';
     this.form.patchValue({
       customerName: '',
     });
+  }
+
+  private isStaleSelectedCustomerSearchValue(customerName: string): boolean {
+    return (
+      !!this.selectedCustomerSearchValue &&
+      normalizeText(this.form.controls.customerName.value) ===
+        normalizeText(this.selectedCustomerSearchValue) &&
+      normalizeText(customerName) === normalizeText(this.selectedCustomerSearchTypedValue) &&
+      normalizeText(customerName) !== normalizeText(this.selectedCustomerSearchValue)
+    );
+  }
+
+  private isStaleSelectedProductSearchValue(productName: string): boolean {
+    return (
+      !!this.selectedProductSearchValue &&
+      normalizeText(this.form.controls.productName.value) ===
+        normalizeText(this.selectedProductSearchValue) &&
+      normalizeText(productName) === normalizeText(this.selectedProductSearchTypedValue) &&
+      normalizeText(productName) !== normalizeText(this.selectedProductSearchValue)
+    );
   }
 
   onPriceInput(event: Event, fieldName: string): void {
