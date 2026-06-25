@@ -197,7 +197,11 @@ import { SearchSelectComponent, SearchSelectOption } from '../../shared/search-s
                 <td data-label="Tổng giá bán">
                   {{ order.amountSellingPrice | number: '1.0-0' }} VNĐ
                 </td>
-                <td data-label="Trạng thái">
+                <td
+                  data-label="Trạng thái"
+                  class="order-status-cell"
+                  [class.status-arrived]="order.status === 'ARRIVED'"
+                >
                   <app-search-select
                     [selectedLabel]="orderStatusLabels[order.status]"
                     [options]="rowStatusSelectOptions(order)"
@@ -208,7 +212,11 @@ import { SearchSelectComponent, SearchSelectOption } from '../../shared/search-s
                     (optionSelected)="requestStatusOptionChange(order, $event)"
                   />
                 </td>
-                <td data-label="Thanh toán">
+                <td
+                  data-label="Thanh toán"
+                  class="payment-status-cell"
+                  [class.payment-paid]="order.paymentStatus === 'PAID'"
+                >
                   <app-search-select
                     [selectedLabel]="paymentStatusLabels[order.paymentStatus]"
                     [options]="rowPaymentStatusSelectOptions(order)"
@@ -913,6 +921,48 @@ import { SearchSelectComponent, SearchSelectOption } from '../../shared/search-s
     td app-search-select {
       min-width: 126px;
       display: block;
+    }
+
+    :host ::ng-deep .order-status-cell.status-arrived app-search-select .trigger {
+      border-color: #86efac;
+      background: linear-gradient(180deg, #ecfdf5, #dcfce7);
+      color: #166534;
+      font-weight: 700;
+    }
+
+    :host ::ng-deep .order-status-cell.status-arrived app-search-select .trigger:hover {
+      border-color: #4ade80;
+      background: linear-gradient(180deg, #f0fdf4, #bbf7d0);
+    }
+
+    :host ::ng-deep .order-status-cell.status-arrived app-search-select .search-select.open .trigger {
+      border-color: #22c55e;
+      box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.18);
+    }
+
+    :host ::ng-deep .order-status-cell.status-arrived app-search-select .icon {
+      color: #15803d;
+    }
+
+    :host ::ng-deep .payment-status-cell.payment-paid app-search-select .trigger {
+      border-color: #f9a8d4;
+      background: linear-gradient(180deg, #fdf2f8, #fce7f3);
+      color: #9d174d;
+      font-weight: 700;
+    }
+
+    :host ::ng-deep .payment-status-cell.payment-paid app-search-select .trigger:hover {
+      border-color: #f472b6;
+      background: linear-gradient(180deg, #fff1f2, #fbcfe8);
+    }
+
+    :host ::ng-deep .payment-status-cell.payment-paid app-search-select .search-select.open .trigger {
+      border-color: #ec4899;
+      box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.18);
+    }
+
+    :host ::ng-deep .payment-status-cell.payment-paid app-search-select .icon {
+      color: #be185d;
     }
 
     .section-grid input,
